@@ -130,6 +130,9 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# WorkBuddy local memory and runtime files (may contain secrets)
+.workbuddy/
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged

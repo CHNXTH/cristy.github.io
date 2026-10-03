@@ -1,0 +1,20 @@
+name = "cristy-ai-chat"
+main = "src/index.js"
+compatibility_date = "2026-04-30"
+workers_dev = true
+
+[observability.logs]
+enabled = true
+
+[secrets]
+required = ["DEEPSEEK_API_KEY", "ADMIN_SESSION_SECRET", "ADMIN_BOOTSTRAP_PASSWORD"]
+
+[[kv_namespaces]]
+binding = "SITE_DATA"
+# KV namespace id on the new Cloudflare account.
+# Create one with: npx wrangler kv namespace create SITE_DATA
+# then paste the returned id below.
+id = "REPLACE_WITH_NEW_KV_NAMESPACE_ID"
+
+# Note: This project stores uploaded images in Workers KV (SITE_DATA) by default
+# so it works even when R2 is not enabled on the account.

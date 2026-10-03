@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="https://schema.org/WebPage" xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:og="http://ogp.me/ns#" 
+      xmlns:fb="http://www.facebook.com/2008/fbml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
+    <script>
+        (function () {
+            var defaultMode = 'dark';
+            var mode = defaultMode;
+            try {
+                var raw = localStorage.getItem('websiteData');
+                if (raw) {
+                    var data = JSON.parse(raw);
+                    var savedMode = data && data.settings && data.settings.themeMode;
+                    if (savedMode === 'light' || savedMode === 'dark' || savedMode === 'system') {
+                        mode = savedMode;
+                    }
+                }
+            } catch (_) {}
+
+            var root = document.documentElement;
+            root.classList.remove('force-light', 'force-dark', 'dark-mode');
+            if (mode === 'light') {
+                root.classList.add('force-light');
+                root.style.colorScheme = 'light';
+            } else if (mode === 'dark') {
+                root.classList.add('force-dark', 'dark-mode');
+                root.style.colorScheme = 'dark';
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                root.classList.add('dark-mode');
+                root.style.colorScheme = 'dark';
+            } else {
+                root.style.colorScheme = 'light';
+            }
+        })();
+    </script>
+    <title>Cristy Fan (樊语响)</title>
+    
+    <!-- SEO元标签 -->
+    <meta name="description" content="Cristy Fan (樊语响) - Product Manager with an architecture and urban planning background.">
+    <meta name="keywords" content="Cristy Fan,樊语响,Product Manager,产品经理,ByteDance,SHEIN,Douyin,University of Manchester,Architecture,Urban Planning,建筑学,城市规划,Figma,AI Coding">
+    <meta name="author" content="Cristy Fan (樊语响)">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="baiduspider" content="index, follow">
+    <meta name="generator" content="HTML5">
+    <meta name="application-name" content="Cristy Fan's Portfolio">
+    
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+    <link rel="canonical" href="https://chnxth.github.io/cristy.github.io/">
+    
+    <!-- favicon设置 -->
+    <link rel="icon" href="assets/images/avatar-round.png" type="image/png">
+    <link rel="shortcut icon" href="assets/images/avatar-round.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/images/avatar-round.png">
+    <link rel="preload" href="assets/images/avatar.jpg" as="image" fetchpriority="high">
+    
+    <!-- Open Graph 元标签 -->
+    <meta property="og:title" content="Cristy Fan (樊语响) - Product Manager">
+    <meta property="og:description" content="Cristy Fan's personal website. Product manager with an architecture and urban planning background.">
+    <meta property="og:image" content="assets/images/avatar-round.png">
+    <meta property="og:url" content="https://chnxth.github.io/cristy.github.io/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Cristy Fan's Personal Website">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:locale:alternate" content="en_US">
+    
+    <!-- 更新站点实时性标签 -->
+    <meta name="revisit-after" content="7 days">
+    <meta http-equiv="last-modified" content="2025-05-05">
+    <meta name="updated-date" content="2025-05-05">
+    <meta property="article:modified_time" content="2025-00-05T08:00:00+08:00">
+    
+    <!-- Twitter卡片元标签 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cristy Fan (樊语响) - Product Manager">
+    <meta name="twitter:description" content="Cristy Fan's personal website. Product manager with an architecture and urban planning background.">
+    <meta name="twitter:image" content="assets/images/avatar-round.png">
+    
+    <link rel="stylesheet" href="styles.css?v=20261001-carousel">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <div class="nav-avatar-container">
+                    <img src="assets/images/avatar.jpg" alt="Cristy Fan" class="nav-avatar-img" decoding="async" onerror="this.src='https://via.placeholder.com/200x200?text=C'">
+                    <span class="nav-logo-text">Cristy Fan</span>
+                </div>
+            </div>
+            <div class="nav-center">
+                <ul class="nav-links">
+                    <li><a href="#education" class="nav-link">Education</a></li>
+                    <li><a href="#experience" class="nav-link">Experience</a></li>
+                    <li><a href="#papers" class="nav-link">Projects</a></li>
+                    <li><a href="#awards" class="nav-link">Awards</a></li>
+                    <li><a href="#footprints" class="nav-link">Footprints</a></li>
+                    <li><a href="#social" class="nav-link">Connect</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <button id="language-toggle" aria-label="Switch Language">
+                    <span class="lang-text">中文</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-bg" aria-hidden="true"></div>
+            <div class="container">
+                <div class="hero-content">
+                        <div class="avatar-container">
+                            <div class="avatar-outer-circle">
+                                <div class="avatar-inner-circle">
+                                    <div class="avatar-flip" aria-label="Flip avatar" role="button" tabindex="0">
+                                        <div class="avatar-face avatar-face-front">
+                                            <img src="assets/images/avatar.jpg" alt="Cristy Fan" class="avatar-img" loading="eager" fetchpriority="high" decoding="async" onerror="this.src='https://via.placeholder.com/200x200?text=Cristy+Fan'">
+                                        </div>
+                                        <div class="avatar-face avatar-face-back">
+                                            <img src="assets/images/avatar.jpg" alt="Cristy Fan (flip)" class="avatar-img-back" loading="eager" decoding="async" onerror="this.src='https://via.placeholder.com/200x200?text=Cristy+Fan'">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <div class="hero-info">
+                        <div class="hero-kicker" data-en="HELLO, I'M" data-zh="你好，我是"><span class="hero-kicker-dot" aria-hidden="true"></span><span class="hero-kicker-text">HELLO, I'M</span></div>
+                        <h1 class="name" data-en="Cristy Fan" data-zh="樊语响 Cristy">Cristy Fan</h1>
+                        <div class="location-info"><i class="fas fa-map-marker-alt"></i>Manchester, UK</div>
+                        <div class="contact-info">
+                            <p>Product Manager | <a href="tel:+8615854191070">+86 158 5419 1070</a> | <a href="mailto:cristy422@163.com">cristy422@163.com</a></p>
+                        </div>
+                        <p class="hero-summary" data-typing-pending data-en="Product manager with an architecture and urban planning background. I've shipped growth and product work at ByteDance and SHEIN, and I love turning user insights into experiences people actually enjoy." data-zh="建筑与城市规划背景的产品人。曾在字节跳动与 SHEIN 做增长与产品工作，喜欢把用户洞察变成真正好用的体验。"></p>
+                        <div class="hero-cta">
+                            <a class="hero-btn hero-btn-primary" href="#experience">Explore Experience</a>
+                            <a class="hero-btn hero-btn-ghost" href="#recent-projects">View Projects</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="content-stack">
+        <section id="education" class="section section-overlay">
+            <div class="container">
+                <h2 class="section-title">Education</h2>
+                <div class="education-item">
+                    <div class="education-header">
+                        <h3>University of Manchester</h3>
+                        <p class="education-meta">QS Ranking: 35</p>
+                    </div>
+                    <p class="education-details">School of Environment, Education and Development | MA in Architecture and Urban Planning</p>
+                    <p class="education-time">2025.09 - 2026.12</p>
+                    <p class="education-research">Core Modules: Urban Design, Architectural Design Studio, Urban Research Methods, Quantitative Research Methods, Urban Analytics, Sustainable Urban Development</p>
+                </div>
+                <div class="divider"></div>
+                <div class="education-item">
+                    <div class="education-header">
+                        <h3>Shandong Jianzhu University</h3>
+                        <p class="education-meta">National First-Class Undergraduate Program</p>
+                    </div>
+                    <p class="education-details">School of Architecture and Urban Planning | Bachelor of Architecture</p>
+                    <p class="education-time">2020.09 - 2025.07</p>
+                    <p class="education-awards">Honors: First-Class Scholarship, Outstanding Student Cadre Model, Second Prize in the National English Competition</p>
+                </div>
+            </div>
+        </section>
+        </div>
+
+        <section id="experience" class="section section-background">
+            <div class="container">
+                <h2 class="section-title">Work Experience</h2>
+                <div class="experience-item">
+                    <div class="experience-logo" data-controls="bytedance-details" title="Click to expand details">
+                        <img src="assets/images/bytedance.png" alt="ByteDance Logo" data-invert-on-dark="true">
+                    </div>
+                    <div class="experience-content">
+                        <div class="experience-header" data-controls="bytedance-details" title="Click to expand details">
+                            <h3>ByteDance (Shanghai) - Douyin E-commerce</h3>
+                            <p class="experience-meta">Product Operations Intern | Doudou Farm Growth Project</p>
+                            <p class="experience-time">2025.12 - 2026.02</p>
+                            <button class="experience-toggle" aria-expanded="false" aria-controls="bytedance-details" title="Toggle details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="experience-details-wrapper" id="bytedance-wrapper">
+                            <ul class="experience-details" id="bytedance-details">
+                                <li><strong>Competitive Diagnosis:</strong> Worked on the Douyin E-commerce "Doudou Farm" growth project. Benchmarked similar farm-style interaction products against activity, retention, and mall-conversion metrics, combining user behavior flows, task experience, and public sentiment to identify core pain points such as limited gameplay variety, and delivered a dedicated optimization plan.</li>
+                                <li><strong>Social Gameplay Design:</strong> Designed social-driven growth mechanics on top of Douyin's "Little Fire Person" social graph, including a dual friends/partner team mode with growth multipliers, pair-exclusive rewards, and anniversary incentives, creating a companionship-style growth loop that strengthened retention and return visits.</li>
+                                <li><strong>Incentive System Optimization:</strong> Tackled late-stage growth fatigue and task frustration by building a full-cycle, tiered incentive system, launching staged growth perks, end-stage guaranteed lotteries, and monthly check-in prize pools, and integrating diverse rewards such as props and coupons to smooth the growth curve and lift engagement across the whole lifecycle.</li>
+                                <li><strong>Product Delivery &amp; Iteration:</strong> Linked interactive gameplay with mall traffic through lightweight tasks such as "favorite a product to earn water drops" and "add to cart for rewards", closing the loop between gameplay and mall traffic. Independently wrote complete PRDs and interaction specs covering feature rules, risk control, and event tracking, and iterated continuously based on data and user feedback.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="experience-item">
+                    <div class="experience-logo" data-controls="shein-details" title="Click to expand details">
+                        <img src="assets/images/shein.png" alt="SHEIN Logo" data-invert-on-dark="true">
+                    </div>
+                    <div class="experience-content">
+                        <div class="experience-header" data-controls="shein-details" title="Click to expand details">
+                            <h3>SHEIN (Shanghai)</h3>
+                            <p class="experience-meta">Product Manager Intern | User Growth &amp; Referral Program</p>
+                            <p class="experience-time">2025.06 - 2025.08</p>
+                            <button class="experience-toggle" aria-expanded="false" aria-controls="shein-details" title="Toggle details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="experience-details-wrapper" id="shein-wrapper">
+                            <ul class="experience-details" id="shein-details">
+                                <li><strong>User Growth Analysis:</strong> Joined SHEIN's app referral (fission) growth project, owning requirement delivery and end-to-end activity follow-up. Analyzed in-app user behavior data and conversion funnels, benchmarked referral mechanics from Pinduoduo and Douyin E-commerce, mapped pain points across the invite-new-user journey, and delivered gameplay optimization proposals.</li>
+                                <li><strong>Referral Activity Design:</strong> Co-designed the referral activity and its rules, building a quiz-challenge flow, tiered rewards, invite leaderboards, and a multi-category prize system, while optimizing share links, new-user onboarding, and win-back triggers to strengthen sharing intent and participation.</li>
+                                <li><strong>Data-Driven Iteration:</strong> Monitored share rate, invite success rate, and registration conversion, and kept iterating activity rules and page experience. Through gameplay optimization, share rate improved by 12%+ and new-user registration conversion improved by 10%.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="experience-item">
+                    <div class="experience-logo" data-controls="matconstruct-details" title="Click to expand details">
+                        <img src="assets/images/matconstruct.png" alt="Matconstruct Logo" class="custom-project-icon">
+                    </div>
+                    <div class="experience-content">
+                        <div class="experience-header" data-controls="matconstruct-details" title="Click to expand details">
+                            <h3>Matconstruct - Building Materials Learning Mini Program</h3>
+                            <p class="experience-meta">Product Design Support (Product Assistant)</p>
+                            <p class="experience-time">2023.05 - 2023.09</p>
+                            <button class="experience-toggle" aria-expanded="false" aria-controls="matconstruct-details" title="Toggle details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="experience-details-wrapper" id="matconstruct-wrapper">
+                            <ul class="experience-details" id="matconstruct-details">
+                                <li><strong>User Research &amp; Pain Points:</strong> Collected user materials for the building-materials learning scenario and analyzed needs, breaking down the core pain points of architecture students across material cognition, coursework, and design application, and drafted the user pain-point analysis that grounded the product's positioning.</li>
+                                <li><strong>Information Architecture:</strong> Co-shaped the mini program's core features in team IA workshops, defining the page logic and information hierarchy for the two core modules: material data display and design-specification Q&amp;A.</li>
+                                <li><strong>Interaction &amp; Visual Polish:</strong> Worked with the UI/UX team on core pages, refining visual presentation and interaction details and improving the hierarchy of material information for clearer reading and easier operation.</li>
+                                <li><strong>Testing &amp; Iteration:</strong> Led UAT issue collection and feedback triage, turned real user opinions into iteration suggestions, and helped ship 2 agile minor releases improving page display and content presentation.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="experience-item">
+                    <div class="experience-logo" data-controls="media-details" title="Click to expand details">
+                        <img src="assets/images/placeholder-logo.png" alt="New Media Center Logo" class="custom-project-icon">
+                    </div>
+                    <div class="experience-content">
+                        <div class="experience-header" data-controls="media-details" title="Click to expand details">
+                            <h3>Shandong Jianzhu University New Media Center</h3>
+                            <p class="experience-meta">Deputy Head, Technology Department</p>
+                            <p class="experience-time">2021.09 - 2022.07</p>
+                            <button class="experience-toggle" aria-expanded="false" aria-controls="media-details" title="Toggle details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="experience-details-wrapper" id="media-wrapper">
+                            <ul class="experience-details" id="media-details">
+                                <li><strong>Official Douyin Account Operations:</strong> Ran the university's official Douyin account and its content strategy. Studied platform recommendation mechanics and audience preferences to sharpen topic selection and content structure, growing followers by 10,000+.</li>
+                                <li><strong>Content &amp; Data Optimization:</strong> Reviewed core metrics such as views, like rate, and engagement to iterate on video format, pacing, and posting timing, lifting reach and content quality — a single video peaked at 30,000 likes.</li>
+                                <li><strong>Team &amp; Workflow:</strong> Went deep into short-video planning, shooting, and editing around campus life and trending topics, and helped the team build a stable production pipeline for consistently high output quality.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <h3 class="subsection-title" id="recent-projects">Recent Projects</h3>
+                <div class="projects-carousel">
+                    <div class="projects-viewport" id="projects-viewport" tabindex="0" role="region" aria-labelledby="recent-projects">
+                    <div class="projects-wrapper">
+                        <div class="project-item">
+                            <a href="#papers" class="project-link">
+                                <div class="project-image-container">
+                                    <img src="assets/images/OldTrafford-Cover.jpg" alt="Old Trafford Urban Regeneration" class="project-image">
+                                </div>
+                                <div class="project-info">
+                                    <h3>Digital Regeneration &amp; Urban Vitality Strategy - Old Trafford Stadium Area</h3>
+                                    <p class="view-project">View Details</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="project-item">
+                            <a href="#experience" class="project-link">
+                                <div class="project-image-container">
+                                    <img src="assets/images/MatConstruct-Cover.jpg" alt="Matconstruct App" class="project-image">
+                                </div>
+                                <div class="project-info">
+                                    <h3>Matconstruct - Building Materials Learning Mini Program</h3>
+                                    <p class="view-project">View Details</p>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- 此处可以添加更多项目 -->
+                    </div>
+                    </div>
+                    <div class="carousel-controls">
+                        <button class="carousel-prev" type="button" hidden aria-controls="projects-viewport" aria-label="Previous projects"><i class="fas fa-chevron-left"></i></button>
+                        <button class="carousel-next" type="button" aria-controls="projects-viewport" aria-label="Next projects"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="papers" class="section timeline-section">
+            <div class="container">
+                <h2 class="section-title">Research Projects</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">2025.09 - 2025.12</div>
+                        <div class="timeline-content">
+                            <h3>Digital Regeneration and Urban Vitality Strategy for the Old Trafford Stadium Area</h3>
+                            <p>Research Member | University of Manchester. Collected multi-dimensional data around the stadium — traffic flow, business mix, and public space use — with ArcGIS, and cleaned it for spatial analysis. Quantitatively compared match-day vs non-match-day spatial use to pinpoint core issues such as crowd-flow management and weak commercial vitality. Introduced Midjourney (AIGC) to generate multiple spatial design options and combined AR visualization for immersive presentation, greatly accelerating scheme validation. Delivered a structured strategy decomposing complex urban problems into traffic organization and crowd control modules.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="footprints-story" id="footprints-story">
+                <div id="map-container">
+                    <div class="globe-overlay-controls">
+                        <div class="globe-control-stack">
+                            <button class="globe-control-btn" id="globe-layer-toggle" type="button" aria-label="Toggle map layers" title="Map layers">
+                                <i class="fas fa-globe-americas"></i>
+                            </button>
+                            <button class="globe-control-btn" id="globe-locate-btn" type="button" aria-label="Locate my city" title="Locate my city">
+                                <i class="fas fa-location-arrow"></i>
+                            </button>
+                        </div>
+                        <div class="globe-control-stack globe-zoom-stack">
+                            <button class="globe-control-btn globe-zoom-btn" id="globe-zoom-in" type="button" aria-label="Zoom in" title="Zoom in">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="globe-control-btn globe-zoom-btn" id="globe-zoom-out" type="button" aria-label="Zoom out" title="Zoom out">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                        <div class="globe-layer-panel" id="globe-layer-panel" hidden>
+                            <div class="globe-layer-title">Map Layers</div>
+                            <label class="globe-layer-option">
+                                <input type="checkbox" id="globe-toggle-footprints" checked>
+                                <span>Show Footprints</span>
+                            </label>
+                            <label class="globe-layer-option">
+                                <input type="checkbox" id="globe-toggle-messages" checked>
+                                <span>Show Anonymous Messages</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="world-map">
+                        <canvas id="footprints-globe-canvas" aria-label="3D Earth globe"></canvas>
+                    </div>
+                    <div class="globe-message-entry" id="globe-message-entry" data-state="closed">
+                        <div class="globe-message-shell">
+                            <button class="globe-message-launcher" id="globe-message-launcher" type="button" aria-expanded="false" aria-controls="globe-message-composer">
+                                <span id="globe-message-label">Leave a message</span>
+                                <span class="globe-send-disc" aria-hidden="true"><img src="assets/icons/send.svg" alt=""></span>
+                            </button>
+                            <div class="globe-message-composer" id="globe-message-composer" inert aria-hidden="true">
+                                <div class="globe-message-composer-header">
+                                    <span>Leave a message</span>
+                                    <button id="globe-privacy-link" class="globe-message-help" type="button" aria-label="Privacy Policy"><span><img src="assets/icons/message-help.svg" alt=""></span></button>
+                                </div>
+                                <div class="globe-message-input-wrap">
+                                    <label class="sr-only" for="globe-message-text">Anonymous message</label>
+                                    <textarea id="globe-message-text" maxlength="100" placeholder="Leave an anonymous message in your city"></textarea>
+                                    <span id="globe-message-counter">0/100</span>
+                                    <button class="globe-send-disc" id="globe-message-send" type="button" aria-label="Send message" disabled><img src="assets/icons/send.svg" alt=""></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="globe-message-feedback" id="globe-message-feedback" role="status" aria-live="polite"></div>
+                        <span class="sr-only" id="globe-message-announcement" role="status" aria-live="polite"></span>
+                    </div>
+                    <div class="globe-modal-backdrop" id="globe-privacy-modal" hidden>
+                        <div class="globe-modal-card" role="dialog" aria-modal="true" aria-labelledby="globe-privacy-title">
+                            <div class="globe-modal-header">
+                                <h3 id="globe-privacy-title">Privacy Policy</h3>
+                                <button class="globe-modal-close" id="globe-privacy-close" type="button" aria-label="Close privacy policy">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <p>
+                                If you allow location, your device coordinates are sent to Photon (or OpenStreetMap Nominatim as a fallback) to identify your city and place your message on the globe. You can also send without location; curated messages without a location appear together at the South Pole.
+                            </p>
+                            <p>
+                                We do not display your precise address or personal identity. Every message is reviewed in the admin panel before publication, and only curated messages may be shown publicly in anonymous form.
+                            </p>
+                            <div class="globe-modal-actions">
+                                <button class="globe-primary-btn" id="globe-privacy-ack" type="button">I Understand</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        <section id="awards" class="section section-background timeline-section">
+            <div class="container">
+                <h2 class="section-title">Awards</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">2020 - 2025</div>
+                        <div class="timeline-content">
+                            <h3>First-Class Scholarship (Shandong Jianzhu University)</h3>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">2020 - 2025</div>
+                        <div class="timeline-content">
+                            <h3>Outstanding Student Cadre Model (Shandong Jianzhu University)</h3>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">2020 - 2025</div>
+                        <div class="timeline-content">
+                            <h3>Second Prize in the National English Competition</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="footprints" class="section" aria-label="Interactive globe"></section>
+
+        <section id="social" class="section connect-footer-section">
+            <div class="container">
+                <h2 class="section-title">Connect With Me</h2>
+                <div class="social-icons">
+                    <a href="mailto:cristy422@163.com" target="_blank" class="social-icon" aria-label="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="tel:+8615854191070" target="_blank" class="social-icon" aria-label="Phone">
+                        <i class="fas fa-phone"></i>
+                    </a>
+                </div>
+                <div class="connect-footer-bottom">
+                    <p id="copyright-text">&copy; 2026 Cristy Fan. All Rights Reserved.</p>
+                </div>
+            </div>
+        </section>
+        </div>
+    </main>
+
+    <!-- 悬浮球和AI对话框 -->
+    <div class="floating-chat-button" id="floating-chat-button">
+        <div class="chat-icon">
+            <img src="assets/favicon/Cristy%20AI.svg" alt="Cristy AI" class="chat-ai-icon">
+        </div>
+        <span class="chat-tooltip">Chat With Me</span>
+    </div>
+
+    <!-- 遮罩层，用于移动端点击外部关闭对话框 -->
+    <div class="chat-overlay" id="chat-overlay"></div>
+
+    <div class="ai-chat-container" id="ai-chat-container">
+        <div class="ai-chat-header">
+            <div class="ai-chat-title">Chat with Cristy AI</div>
+            <button class="ai-chat-close" id="ai-chat-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="ai-chat-glowing-border"></div>
+        <div class="ai-chat-messages" id="ai-chat-messages">
+            <div class="ai-message">
+                <div class="ai-avatar">
+                    <img src="assets/images/avatar-round.png" alt="AI Avatar">
+                </div>
+                <div class="ai-message-content">
+                    <p>Hello! I'm Cristy's AI assistant. How can I help you today?</p>
+                </div>
+            </div>
+        </div>
+        <div class="ai-chat-input-container">
+            <input type="text" class="ai-chat-input" id="ai-chat-input" placeholder="Type your question...">
+            <button class="ai-chat-send" id="ai-chat-send" aria-label="Send message">
+                <img src="assets/icons/send.svg" alt="" width="36" height="36">
+            </button>
+        </div>
+    </div>
+
+    <script src="chat-config.js"></script>
+    <script src="cloudflare-api.js"></script>
+
+    <!-- Footprints 3D globe (Three.js, local-vendored) -->
+    <script type="module" src="footprints-globe.js"></script>
+
+    <!-- 先加载数据同步脚本，确保数据处理函数可用 -->
+    <script src="admin-sync.js"></script>
+    <script src="sync-bridge.js"></script>
+
+    <!-- 主要脚本文件 -->
+    <script src="chat-navigation.js"></script>
+    <script src="script.js?v=20261001-carousel"></script>
+
+    <!-- 添加后台访问相关的脚本 -->
+    <script>
+        // 初始化点击计数器
+        let copyrightClickCount = 0;
+        let lastClickTime = 0;
+        
+        // 监听版权信息点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('初始化版权信息点击监听...');
+            
+            // 确保不在iframe中才执行
+            if (window.self === window.top) {
+                // 检查localStorage中是否已有数据
+                try {
+                    const existingData = localStorage.getItem('websiteData');
+                    if (existingData) {
+                        console.log('检测到localStorage已有数据，跳过初始提取');
+                        window.frontendDataExtracted = true;
+                    } else {
+                        console.log('未检测到localStorage数据，将执行初始提取');
+                        // 标记为未提取，等待admin-sync.js中的提取函数执行
+                        window.frontendDataExtracted = false;
+                    }
+                } catch (e) {
+                    console.error('检查localStorage数据失败:', e);
+                    window.frontendDataExtracted = false;
+                }
+            }
+            
+            const copyrightElement = document.getElementById('copyright-text');
+            if (!copyrightElement) {
+                console.error('找不到版权信息元素 #copyright-text');
+                return;
+            }
+            
+            copyrightElement.addEventListener('click', function(e) {
+                const now = new Date().getTime();
+                
+                // 如果距离上次点击超过3秒，重置计数器
+                if (now - lastClickTime > 3000) {
+                    copyrightClickCount = 0;
+                }
+                
+                // 更新最后点击时间
+                lastClickTime = now;
+                
+                // 增加点击计数
+                copyrightClickCount++;
+                console.log(`版权信息点击次数: ${copyrightClickCount}/5`);
+                
+                // 如果点击次数达到5次，进入后台
+                if (copyrightClickCount >= 5) {
+                    console.log('进入后台管理页面...');
+                    copyrightClickCount = 0; // 重置计数器
+                    
+                    // 确保先提取数据并保存到localStorage
+                    try {
+                        // 检查是否已执行过提取
+                        if (!window.frontendDataExtracted) {
+                            console.log('准备进入后台前，强制提取前端数据...');
+                            // 提取数据
+                            const tempData = {
+                                profile: {},
+                                education: [],
+                                experience: [],
+                                projects: [],
+                                papers: [],
+                                awards: [],
+                                social: [],
+                                footprints: [],
+                                anonymousMessages: []
+                            };
+                            
+                            try {
+                                extractProfileData(tempData);
+                                extractEducationData(tempData);
+                                extractExperienceData(tempData);
+                                extractProjectsData(tempData);
+                                extractPapersData(tempData);
+                                extractAwardsData(tempData);
+                                extractFootprintsData(tempData);
+                                extractSocialData(tempData);
+                                
+                                localStorage.setItem('websiteData', JSON.stringify(tempData));
+                                window.frontendDataExtracted = true;
+                                console.log('数据提取并保存到localStorage');
+                            } catch (e) {
+                                console.error('紧急提取数据失败:', e);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('准备进入后台时出错:', e);
+                    }
+                    
+                    // 延迟一点再跳转，确保数据保存完成
+                    setTimeout(function() {
+                        window.location.href = 'admin.html'; // 跳转到后台管理页面
+                    }, 500);
+                }
+            });
+            
+            console.log('版权信息点击监听初始化完成');
+        });
+    </script>
+
+    <!-- 前端数据同步启动脚本 -->
+    <script>
+    // 创建一个自执行函数，确保在页面加载后尽快同步数据
+    (function() {
+        // 用于检测URL参数
+        function getURLParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // 检查是否是从后台更新而来
+        const syncParam = getURLParameter('sync');
+        let isSyncUpdate = false;
+        
+        if (syncParam) {
+            console.log('检测到同步参数:', syncParam);
+            isSyncUpdate = true;
+        }
+        
+        // 初始化完成后立即应用数据
+        function initSync() {
+            try {
+                // 检查localStorage中是否有数据
+                const savedData = localStorage.getItem('websiteData');
+                if (savedData) {
+                    console.log('前端同步脚本: 发现localStorage数据，应用到页面...');
+                    
+                    // 如果updateFrontend函数可用，直接调用
+                    if (typeof updateFrontend === 'function') {
+                        setTimeout(function() {
+                            console.log('前端同步脚本: 延迟执行updateFrontend...');
+                            updateFrontend();
+                        }, 300);
+                    } else {
+                        console.log('前端同步脚本: updateFrontend函数不可用，等待脚本加载完成');
+                        
+                        // 监听DOM内容加载完成
+                        document.addEventListener('DOMContentLoaded', function() {
+                            if (typeof updateFrontend === 'function') {
+                                console.log('前端同步脚本: DOM加载完成后执行updateFrontend');
+                                updateFrontend();
+                            } else {
+                                console.warn('前端同步脚本: DOM加载完成但updateFrontend仍不可用');
+                            }
+                        });
+                    }
+                } else {
+                    console.log('前端同步脚本: localStorage中没有数据，等待提取');
+                }
+            } catch (e) {
+                console.error('前端同步脚本初始化失败:', e);
+            }
+        }
+        
+        // 如果是来自同步更新的请求，立即执行
+        if (isSyncUpdate) {
+            console.log('前端同步脚本: 来自同步更新，立即执行');
+            initSync();
+        } else {
+            // 否则，等待一小段时间再执行，确保其他脚本已加载
+            console.log('前端同步脚本: 等待脚本加载完成...');
+            setTimeout(initSync, 500);
+        }
+        
+        // 向window对象添加一个辅助函数，用于主动检查和同步数据
+        window.checkAndSyncData = function() {
+            try {
+                if (typeof updateFrontend === 'function') {
+                    console.log('主动执行数据检查和同步...');
+                    updateFrontend();
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                console.error('数据同步检查失败:', e);
+                return false;
+            }
+        };
+    })();
+    </script>
+
+    <!-- 同步检查工具 (需要时取消注释) -->
+    <script src="admin-sync-check.js"></script>
+    
+    <!-- 添加结构化数据，帮助搜索引擎更好理解网站内容 -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Person",
+      "name": "樊语响",
+      "alternateName": "Cristy Fan",
+      "url": "https://chnxth.github.io/cristy.github.io/",
+      "image": "assets/images/avatar.jpg",
+      "sameAs": [
+        "mailto:cristy422@163.com"
+      ],
+      "jobTitle": ["Product Manager"],
+      "alumniOf": [
+        {
+          "@type": "CollegeOrUniversity",
+          "name": "University of Manchester",
+          "sameAs": "https://www.manchester.ac.uk/"
+        },
+        {
+          "@type": "CollegeOrUniversity",
+          "name": "Shandong Jianzhu University",
+          "sameAs": "https://www.sdjzu.edu.cn/"
+        }
+      ],
+      "award": [
+        "First-Class Scholarship",
+        "Outstanding Student Cadre Model",
+        "Second Prize in the National English Competition"
+      ],
+      "knowsLanguage": ["中文", "English"],
+      "description": "樊语响(Cristy Fan) - Product Manager with an architecture and urban planning background",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://chnxth.github.io/cristy.github.io/"
+      }
+    }
+    </script>
+</body>
+</html> 

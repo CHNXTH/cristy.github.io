@@ -1,0 +1,2593 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // 滚动效果
+    const header = document.querySelector('header');
+    const heroSection = document.querySelector('.hero');
+    const avatarSection = document.querySelector('.avatar-container');
+    
+    // 获取头像部分的初始位置和大小
+    let heroSectionTop;
+    let avatarSectionTop;
+    
+    // 从websiteData.settings读取“强制深浅色”配置
+    function getThemeModeFromStorage() {
+        try {
+            const raw = localStorage.getItem('websiteData');
+            if (!raw) return 'system';
+            const data = JSON.parse(raw);
+            const settings = data && data.settings && typeof data.settings === 'object' ? data.settings : null;
+            const mode = settings && typeof settings.themeMode === 'string' ? settings.themeMode : 'system';
+            return ['system', 'light', 'dark'].includes(mode) ? mode : 'system';
+        } catch (_) {
+            return 'system';
+        }
+    }
+
+    window.addEventListener('storage', event => {
+        if (event.key === 'websiteData') checkDarkMode();
+    });
+
+    // 供后台/同步脚本在数据更新后主动触发
+    window.applyThemePreferenceFromStorage = function () {
+        checkDarkMode();
+    };
+
+    function ensureForcedThemeStyles() {
+        if (document.getElementById('forced-theme-overrides')) return;
+
+        const style = document.createElement('style');
+        style.id = 'forced-theme-overrides';
+        style.textContent = `
+/* Injected by script.js to allow overriding prefers-color-scheme via admin setting. */
+:root.force-light {
+  --primary-color: #000;
+  --secondary-color: #86868b;
+  --accent-color: #0071e3;
+  --background-color: #fff;
+  --background-color-rgb: 255, 255, 255;
+  --light-gray: #f5f5f7;
+  --divider-color: #d2d2d7;
+  --header-bg-color: rgba(255, 255, 255, 0.65);
+  --header-bg-color-rgb: 255, 255, 255;
+  --header-bg-scrolled: rgba(255, 255, 255, 0.75);
+  --header-bg-scrolled-rgb: 255, 255, 255;
+  --hero-content-bg: rgba(255, 255, 255, 0.8);
+  --card-bg: white;
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  --hero-bg-filter: brightness(0.7);
+  --section-bg-overlay: rgba(255, 255, 255, 0.05);
+  --timeline-color: #d2d2d7;
+  --timeline-dot-color: #0033A0;
+  --search-bg: rgba(0, 0, 0, 0.8);
+  --search-box-bg: white;
+  --search-result-border: var(--light-gray);
+  --search-close-color: white;
+  --country-fill: #d1d1d1;
+  --country-stroke: #F4F4F4;
+  --footprint-color: #0066ff;
+  --footer-bg: var(--light-gray);
+  --hero-code-bg: rgba(6, 24, 44, 0.06);
+  --hero-code-border: rgba(15, 23, 42, 0.10);
+  --hero-code-text: rgba(15, 23, 42, 0.86);
+  --hero-code-accent: rgba(0, 113, 227, 0.95);
+  --hero-glow-blue: rgba(0, 123, 255, 0.18);
+  --hero-glow-orange: rgba(255, 140, 0, 0.12);
+  --hero-sheen-start: rgba(255, 255, 255, 0.18);
+  --hero-sheen-end: rgba(255, 255, 255, 0.03);
+  --stack-surface: rgba(255, 255, 255, 0.52);
+  --stack-border: rgba(255, 255, 255, 0.26);
+  --stack-shadow: 0 -18px 60px rgba(15, 23, 42, 0.12);
+  --stack-blur: 26px;
+  --code-tok-kw: #AF00DB;
+  --code-tok-type: #267F99;
+  --code-tok-fn: #795E26;
+  --code-tok-var: #001080;
+  --code-tok-str: #A31515;
+  --code-tok-num: #098658;
+  --code-tok-op: #000000;
+}
+
+:root.force-light .contact-info {
+  color: rgba(15, 23, 42, 0.72) !important;
+}
+
+:root.force-light .contact-info a {
+  color: rgba(0, 113, 227, 0.95) !important;
+}
+
+:root.force-light .experience-logo img[data-invert-on-dark="true"],
+:root.force-light .custom-icon,
+:root.force-light .custom-project-icon {
+  filter: none !important;
+}
+
+:root.force-dark {
+  --primary-color: #f5f5f7;
+  --secondary-color: #a1a1a6;
+  --background-color: #1a1a1a;
+  --background-color-rgb: 26, 26, 26;
+  --light-gray: #2a2a2a;
+  --divider-color: #38383c;
+  --header-bg-color: rgba(26, 26, 26, 0.65);
+  --header-bg-color-rgb: 26, 26, 26;
+  --header-bg-scrolled: rgba(26, 26, 26, 0.75);
+  --header-bg-scrolled-rgb: 26, 26, 26;
+  --hero-content-bg: rgba(26, 26, 26, 0.8);
+  --card-bg: #252525;
+  --card-shadow: rgba(0, 0, 0, 0.3);
+  --hero-bg-filter: brightness(0.4);
+  --section-bg-overlay: rgba(0, 0, 0, 0.2);
+  --timeline-color: #38383c;
+  --timeline-dot-color: #0071e3;
+  --search-bg: rgba(0, 0, 0, 0.9);
+  --search-box-bg: #2a2a2a;
+  --search-result-border: #38383c;
+  --search-close-color: #f5f5f7;
+  --country-fill: #333333;
+  --country-stroke: #444444;
+  --footprint-color: #0082fc;
+  --footer-bg: #252525;
+  --hero-code-bg: rgba(7, 12, 20, 0.62);
+  --hero-code-border: rgba(148, 206, 255, 0.14);
+  --hero-code-text: rgba(210, 230, 255, 0.88);
+  --hero-code-accent: rgba(138, 180, 255, 0.95);
+  --hero-glow-blue: rgba(0, 130, 252, 0.22);
+  --hero-glow-orange: rgba(255, 164, 57, 0.14);
+  --hero-sheen-start: rgba(26, 26, 26, 0.18);
+  --hero-sheen-end: rgba(26, 26, 26, 0.04);
+  --stack-surface: rgba(22, 22, 24, 0.42);
+  --stack-border: rgba(255, 255, 255, 0.1);
+  --stack-shadow: 0 -24px 72px rgba(0, 0, 0, 0.34);
+  --stack-blur: 30px;
+  --code-tok-kw: #C586C0;
+  --code-tok-type: #4EC9B0;
+  --code-tok-fn: #DCDCAA;
+  --code-tok-var: #9CDCFE;
+  --code-tok-str: #CE9178;
+  --code-tok-num: #B5CEA8;
+  --code-tok-op: rgba(210, 230, 255, 0.88);
+}
+
+:root.force-dark .experience-logo img[data-invert-on-dark="true"],
+:root.force-dark .custom-icon,
+:root.force-dark .custom-project-icon {
+  filter: brightness(0) invert(1) !important;
+}
+
+:root.force-dark .hero-btn-ghost {
+  background: rgba(0, 0, 0, 0.22) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+:root.force-dark .hero-btn-ghost:hover {
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35) !important;
+}
+
+:root.force-dark .ai-chat-container {
+  background-color: rgba(30, 30, 30, 0.6) !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:root.force-dark .ai-chat-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+:root.force-dark .ai-chat-close {
+  color: #aaa !important;
+}
+
+:root.force-dark .ai-chat-close:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+:root.force-dark .ai-chat-input-container {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+:root.force-dark .ai-chat-input {
+  background-color: rgba(50, 50, 50, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+:root.force-dark .ai-message-content {
+  background-color: rgba(60, 60, 60, 0.8) !important;
+  color: white !important;
+}
+`;
+        document.head.appendChild(style);
+    }
+
+    function setMetaColorScheme(mode) {
+        const meta = document.querySelector('meta[name="color-scheme"]');
+        if (!meta) return;
+        if (mode === 'dark') meta.setAttribute('content', 'dark');
+        else if (mode === 'light') meta.setAttribute('content', 'light');
+        else meta.setAttribute('content', 'light dark');
+    }
+
+    // 检测深色模式（支持强制配置）
+    checkDarkMode();
+    
+    // 监听系统深色模式变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
+    
+    // 页面加载后更新位置信息
+    function updatePositions() {
+        heroSectionTop = heroSection.offsetTop;
+        avatarSectionTop = avatarSection.offsetTop;
+        
+        // 页面加载时也检查滚动位置和设备类型
+        const scrollPosition = window.scrollY;
+        const heroHeight = heroSection.offsetHeight;
+        const isMobile = window.innerWidth <= 768;
+        
+        // 根据设备类型决定是否显示header中的头像
+        if (isMobile) {
+            // 移动端：只有在hero区域滚出视图后才显示头像
+            if (scrollPosition > heroSectionTop + heroHeight - 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+                
+                // 确保在移动端初始加载时不显示头像
+                if (scrollPosition === 0) {
+                    header.classList.remove('scrolled');
+                }
+            }
+        } else {
+            // 桌面端：在轻微滚动后即显示头像
+            if (scrollPosition > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        }
+    }
+    
+    // 检测系统深色模式并适配
+    function checkDarkMode() {
+        let chatStyle = 'blue';
+        try {
+            const data = JSON.parse(localStorage.getItem('websiteData') || '{}');
+            if (data.settings?.cristyAIStyle === 'purple') chatStyle = 'purple';
+        } catch (_) {}
+        document.documentElement.dataset.cristyAiStyle = chatStyle;
+
+        const forcedMode = getThemeModeFromStorage();
+        ensureForcedThemeStyles();
+
+        if (forcedMode === 'light') {
+            document.documentElement.classList.add('force-light');
+            document.documentElement.classList.remove('force-dark');
+            setMetaColorScheme('light');
+        } else if (forcedMode === 'dark') {
+            document.documentElement.classList.add('force-dark');
+            document.documentElement.classList.remove('force-light');
+            setMetaColorScheme('dark');
+        } else {
+            document.documentElement.classList.remove('force-light');
+            document.documentElement.classList.remove('force-dark');
+            setMetaColorScheme('system');
+        }
+
+        const isDarkMode =
+            forcedMode === 'dark'
+                ? true
+                : forcedMode === 'light'
+                    ? false
+                    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark-mode');
+            // 调整地图颜色和组件（如果需要）
+            updateMapForDarkMode(true);
+        } else {
+            document.documentElement.classList.remove('dark-mode');
+            updateMapForDarkMode(false);
+        }
+    }
+    
+    // 更新地图深色模式（如果地图已初始化）
+    function updateMapForDarkMode(isDark) {
+        if (typeof d3 === 'undefined') return;
+        // 如果地图已经初始化，则更新其颜色
+        const worldMap = d3.select('#world-map svg');
+        if (!worldMap.empty()) {
+            if (isDark) {
+                worldMap.selectAll('path.country')
+                    .attr('fill', getComputedStyle(document.documentElement).getPropertyValue('--country-fill').trim())
+                    .attr('stroke', getComputedStyle(document.documentElement).getPropertyValue('--country-stroke').trim());
+                
+                worldMap.selectAll('.footprint')
+                    .attr('fill', getComputedStyle(document.documentElement).getPropertyValue('--footprint-color').trim());
+            } else {
+                worldMap.selectAll('path.country')
+                    .attr('fill', getComputedStyle(document.documentElement).getPropertyValue('--country-fill').trim())
+                    .attr('stroke', getComputedStyle(document.documentElement).getPropertyValue('--country-stroke').trim());
+                
+                worldMap.selectAll('.footprint')
+                    .attr('fill', getComputedStyle(document.documentElement).getPropertyValue('--footprint-color').trim());
+            }
+        }
+    }
+    
+    // 页面加载和窗口调整时更新位置
+    window.addEventListener('load', updatePositions);
+    window.addEventListener('resize', updatePositions);
+    
+    // 监听滚动事件
+    window.addEventListener('scroll', () => {
+        const scrollPosition = window.scrollY;
+        const heroHeight = document.querySelector('.hero').offsetHeight;
+        const heroTop = document.querySelector('.hero').offsetTop;
+        const isMobile = window.innerWidth <= 768;
+        
+        // 根据不同设备类型确定显示导航栏头像的滚动位置
+        if (isMobile) {
+            // 移动端：只有在hero区域完全滚出视图后才显示头像
+            if (scrollPosition > heroTop + heroHeight - 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        } else {
+            // 桌面端：在轻微滚动后即显示头像
+            if (scrollPosition > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        }
+        
+        // 为了性能优化，使用requestAnimationFrame
+        if (!window.requestAnimationFrame) return;
+        
+        // 如果已经有等待执行的动画帧，则取消
+        if (window.scrollAnimationFrame) {
+            window.cancelAnimationFrame(window.scrollAnimationFrame);
+        }
+        
+        // 请求新的动画帧
+        window.scrollAnimationFrame = window.requestAnimationFrame(() => {
+            // 在这里添加可能的额外动画效果
+        });
+    });
+    
+    // 初始化各个功能
+    initLanguageToggle();
+    reorganizeHeroLayout();
+    initAvatarFlip();
+    initHeroSummaryTypingOnce();
+    initScrollAnimation();
+    initNavHighlight();
+    initWorldMap();
+    initSearchFeature();
+    initMobileScrollSelector();
+    addLanguageIcon();
+    
+    // Ensure the hero background exists for older cached HTML. New HTML renders it before JS.
+    const hero = document.querySelector('.hero');
+    if (hero && !hero.querySelector('.hero-bg')) {
+        const heroBg = document.createElement('div');
+        heroBg.className = 'hero-bg';
+        heroBg.setAttribute('aria-hidden', 'true');
+        hero.prepend(heroBg);
+    }
+    
+	    // 重组hero区域布局
+	    updateDynamicAgeDisplays();
+	    initHeroPointerDispersion();
+        initHeroOverlayFade();
+
+	    // 项目轮播功能
+	    initProjectsCarousel();
+    
+    // 立即检查是否是移动设备，并强制更新header状态
+    if (window.innerWidth <= 768) {
+        // 移动设备上，初始状态应该移除scrolled类（除非已经滚动了）
+        if (window.scrollY === 0) {
+            header.classList.remove('scrolled');
+        }
+    }
+	});
+
+	function initAvatarFlip() {
+	    const inner = document.querySelector('.avatar-inner-circle');
+	    const flip = inner ? inner.querySelector('.avatar-flip') : null;
+	    if (!inner || !flip) return;
+
+	    const canHover =
+	        window.matchMedia &&
+	        window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+	    const reduceMotion =
+	        window.matchMedia &&
+	        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	    const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
+	    let hovering = false;
+	    let autoPending = false;
+	    let autoIntervalId = 0;
+
+	    let currentRx = 0;
+	    let currentRy = 0;
+	    let targetRx = 0;
+	    let targetRy = 0;
+	    let rafId = 0;
+
+	    const writeVars = () => {
+	        // Use a gentle ease so motion feels "soft" rather than robotic.
+	        const ease = 0.12;
+	        currentRx += (targetRx - currentRx) * ease;
+	        currentRy += (targetRy - currentRy) * ease;
+
+	        inner.style.setProperty('--avatar-hover-rx', `${currentRx.toFixed(2)}deg`);
+	        inner.style.setProperty('--avatar-hover-ry', `${currentRy.toFixed(2)}deg`);
+
+	        if (Math.abs(targetRx - currentRx) < 0.05 && Math.abs(targetRy - currentRy) < 0.05) {
+	            rafId = 0;
+	            return;
+	        }
+	        rafId = window.requestAnimationFrame(writeVars);
+	    };
+
+	    const ensureRaf = () => {
+	        if (!rafId) rafId = window.requestAnimationFrame(writeVars);
+	    };
+
+	    const toggleFlip = (fromAuto = false) => {
+	        if (fromAuto && hovering) {
+	            autoPending = true;
+	            return;
+	        }
+	        inner.classList.toggle('is-flipped');
+	    };
+
+	    const restartAuto = () => {
+	        if (reduceMotion) return;
+	        if (autoIntervalId) window.clearInterval(autoIntervalId);
+	        autoIntervalId = window.setInterval(() => toggleFlip(true), 10000);
+	    };
+
+	    // Click or keyboard activates a full flip.
+	    const onActivate = (e) => {
+	        if (e) e.preventDefault();
+	        toggleFlip(false);
+	        restartAuto();
+	    };
+	    flip.addEventListener('click', onActivate);
+	    flip.addEventListener('keydown', (e) => {
+	        if (e.key === 'Enter' || e.key === ' ') onActivate(e);
+	    });
+
+	    if (canHover && !reduceMotion) {
+	        flip.addEventListener('pointerenter', () => {
+	            hovering = true;
+	        });
+
+	        flip.addEventListener('pointerleave', () => {
+	            hovering = false;
+	            // Return to neutral, softly.
+	            targetRx = 0;
+	            targetRy = 0;
+	            ensureRaf();
+	            if (autoPending) {
+	                autoPending = false;
+	                toggleFlip(true);
+	            }
+	        });
+
+	        flip.addEventListener('pointermove', (e) => {
+	            const rect = inner.getBoundingClientRect();
+	            const x = (e.clientX - rect.left) / rect.width; // 0..1
+	            const y = (e.clientY - rect.top) / rect.height; // 0..1
+
+	            // 1/3 flip feel: keep Y-rotation within +/-60deg.
+	            const maxY = inner.classList.contains('is-flipped') ? 15 : 60;
+	            const maxX = 18;
+
+	            targetRy = clamp((x - 0.5) * 2 * maxY, -maxY, maxY);
+	            targetRx = clamp(-(y - 0.5) * 2 * maxX, -maxX, maxX);
+	            ensureRaf();
+	        });
+	    }
+
+	    // Start the 10s auto flip.
+	    restartAuto();
+	}
+
+function initHeroPointerDispersion() {
+    const heroContainer = document.querySelector('.hero .container');
+    if (!heroContainer) {
+        return;
+    }
+
+    // Only enable the effect on devices where it feels right (desktop hover + fine pointer).
+    const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!canHover || reduceMotion) {
+        return;
+    }
+
+    // Start position matches the CSS fallback. The glow field drifts on its own,
+    // and pointer movement only gently biases that drift.
+    const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
+    let posX = 80;
+    let posY = 30;
+    let pointerX = posX;
+    let pointerY = posY;
+    let pointerInfluence = 0;
+    let pointerActive = false;
+
+    const write = () => {
+        heroContainer.style.setProperty('--hero-glow-x', `${posX.toFixed(2)}%`);
+        heroContainer.style.setProperty('--hero-glow-y', `${posY.toFixed(2)}%`);
+    };
+
+    write();
+
+    const tick = (now = performance.now()) => {
+        const t = now * 0.000075;
+        const ambientX =
+            80 +
+            Math.sin(t * 0.95) * 4.2 +
+            Math.cos(t * 0.33) * 2.1;
+        const ambientY =
+            30 +
+            Math.cos(t * 0.74) * 3.6 +
+            Math.sin(t * 0.41) * 1.5;
+
+        const influenceTarget = pointerActive ? 0.28 : 0;
+        pointerInfluence += (influenceTarget - pointerInfluence) * 0.02;
+
+        const targetX = ambientX * (1 - pointerInfluence) + pointerX * pointerInfluence;
+        const targetY = ambientY * (1 - pointerInfluence) + pointerY * pointerInfluence;
+
+        // Pure easing, no spring, no bounce.
+        posX += (targetX - posX) * 0.018;
+        posY += (targetY - posY) * 0.018;
+        posX = clamp(posX, 0, 100);
+        posY = clamp(posY, 0, 100);
+        write();
+        window.requestAnimationFrame(tick);
+    };
+
+    const onMove = (event) => {
+        const rect = heroContainer.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const x = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
+        const y = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
+        pointerX = x;
+        pointerY = y;
+        pointerActive = true;
+    };
+
+    const onLeave = () => {
+        pointerActive = false;
+    };
+
+    heroContainer.addEventListener('pointermove', onMove, { passive: true });
+    heroContainer.addEventListener('pointerleave', onLeave, { passive: true });
+    window.requestAnimationFrame(tick);
+}
+
+function calculateAgeFromBirthdate(birthdateString) {
+    const birthdate = new Date(birthdateString);
+    const today = new Date();
+
+    let age = today.getFullYear() - birthdate.getFullYear();
+    const hasHadBirthdayThisYear =
+        today.getMonth() > birthdate.getMonth() ||
+        (today.getMonth() === birthdate.getMonth() && today.getDate() >= birthdate.getDate());
+
+    if (!hasHadBirthdayThisYear) {
+        age -= 1;
+    }
+
+    return age;
+}
+
+function updateDynamicAgeDisplays() {
+    document.querySelectorAll('.dynamic-age').forEach((element) => {
+        const birthdate = element.getAttribute('data-birthdate');
+        if (!birthdate) {
+            return;
+        }
+
+        element.textContent = String(calculateAgeFromBirthdate(birthdate));
+    });
+}
+
+window.updateDynamicAgeDisplays = updateDynamicAgeDisplays;
+
+// 重组hero区域布局
+function reorganizeHeroLayout() {
+    const heroContainer = document.querySelector('.hero .container');
+    if (!heroContainer) return;
+
+    const existingHeroContent = heroContainer.querySelector(':scope > .hero-content');
+    if (existingHeroContent) {
+        const summary = existingHeroContent.querySelector('.hero-summary');
+        if (summary) {
+            setHeroSummaryHighlighted(summary, document.documentElement.getAttribute('lang') === 'zh' ? 'zh' : 'en');
+        }
+        return;
+    }
+
+    const avatarContainer = document.querySelector('.avatar-container');
+    const nameElement = document.querySelector('.name');
+    const contactInfo = document.querySelector('.contact-info');
+    if (!avatarContainer || !nameElement || !contactInfo) return;
+    
+    // 创建新的hero内容容器
+    const heroContent = document.createElement('div');
+    heroContent.className = 'hero-content';
+    
+    // 创建个人信息容器
+    const heroInfo = document.createElement('div');
+    heroInfo.className = 'hero-info';
+
+    const kicker = document.createElement('div');
+    kicker.className = 'hero-kicker';
+    kicker.setAttribute('data-en', "HELLO, I'M");
+    kicker.setAttribute('data-zh', '你好，我是');
+    kicker.innerHTML = `<span class="hero-kicker-dot" aria-hidden="true"></span><span class="hero-kicker-text">HELLO, I'M</span>`;
+
+    const summary = document.createElement('p');
+    summary.className = 'hero-summary';
+    summary.setAttribute(
+        'data-en',
+        'AI product + interaction design, with an architecture background. I care about clarity, craft, and shipping things people actually use.'
+    );
+    summary.setAttribute(
+        'data-zh',
+        'AI 产品与交互设计方向，建筑背景出身。我关注清晰表达、体验细节，以及把真正能用的东西做出来。'
+    );
+    setHeroSummaryHighlighted(summary, 'en');
+
+    const cta = document.createElement('div');
+    cta.className = 'hero-cta';
+    cta.innerHTML = `
+        <a class="hero-btn hero-btn-primary" href="#experience">Explore Experience</a>
+        <a class="hero-btn hero-btn-ghost" href="#recent-projects">View Projects</a>
+    `;
+    
+    // 创建位置信息
+    const locationInfo = document.createElement('div');
+    locationInfo.className = 'location-info';
+    locationInfo.innerHTML = '<i class="fas fa-map-marker-alt"></i>Shanghai';
+    locationInfo.style.display = 'flex';
+    locationInfo.style.alignItems = 'center';
+    
+    // 重组结构
+    heroInfo.appendChild(kicker);
+    heroInfo.appendChild(nameElement.cloneNode(true));
+    heroInfo.appendChild(locationInfo);
+    heroInfo.appendChild(contactInfo.cloneNode(true));
+    heroInfo.appendChild(summary);
+    heroInfo.appendChild(cta);
+    
+    // 将头像和信息容器添加到hero内容容器
+    heroContent.appendChild(avatarContainer);
+    heroContent.appendChild(heroInfo);
+    
+    // 清空原容器并添加新结构
+    heroContainer.innerHTML = '';
+    heroContainer.appendChild(heroContent);
+}
+
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function buildHighlightedHtml(text, rules) {
+    const source = String(text || '');
+    if (!source) return '';
+
+    const matches = [];
+    for (const rule of rules) {
+        const re = new RegExp(rule.re.source, rule.re.flags.includes('g') ? rule.re.flags : `${rule.re.flags}g`);
+        let m;
+        while ((m = re.exec(source))) {
+            matches.push({
+                start: m.index,
+                end: m.index + m[0].length,
+                cls: rule.cls,
+                len: m[0].length
+            });
+            // Avoid zero-length infinite loops.
+            if (m[0].length === 0) re.lastIndex += 1;
+        }
+    }
+
+    if (!matches.length) return escapeHtml(source);
+
+    matches.sort((a, b) => (a.start - b.start) || (b.len - a.len));
+    const picked = [];
+    let cursor = 0;
+    for (const m of matches) {
+        if (m.start < cursor) continue;
+        picked.push(m);
+        cursor = m.end;
+    }
+
+    let out = '';
+    let i = 0;
+    for (const m of picked) {
+        out += escapeHtml(source.slice(i, m.start));
+        out += `<span class="${m.cls}">${escapeHtml(source.slice(m.start, m.end))}</span>`;
+        i = m.end;
+    }
+    out += escapeHtml(source.slice(i));
+    return out;
+}
+
+function parseManualHighlightMarkup(raw) {
+    // Format: [[type:AI]] [[kw:architecture]] [[fn:shipping]] [[var:interaction design]]
+    // Unknown tokens fall back to plain text (escaped).
+    const src = String(raw || '');
+    if (!src.includes('[[')) return null;
+
+    const tokenToClass = {
+        kw: 'code-tok-kw',
+        type: 'code-tok-type',
+        fn: 'code-tok-fn',
+        var: 'code-tok-var',
+        str: 'code-tok-str',
+        num: 'code-tok-num',
+        op: 'code-tok-op'
+    };
+
+    let out = '';
+    let i = 0;
+    const re = /\[\[\s*([a-zA-Z]+)\s*:\s*([\s\S]*?)\s*\]\]/g;
+    let m;
+    while ((m = re.exec(src))) {
+        out += escapeHtml(src.slice(i, m.index));
+        const key = String(m[1] || '').toLowerCase();
+        const text = String(m[2] || '');
+        const cls = tokenToClass[key];
+        if (cls) out += `<span class="${cls}">${escapeHtml(text)}</span>`;
+        else out += escapeHtml(m[0]);
+        i = m.index + m[0].length;
+    }
+    out += escapeHtml(src.slice(i));
+    return out;
+}
+
+function setHeroSummaryHighlighted(summaryEl, lang) {
+    if (!summaryEl) return;
+    // During typing, do not let other flows overwrite the content (prevents duplication).
+    if (heroSummaryTypingLock || summaryEl.hasAttribute('data-typing-pending')) return;
+    const raw =
+        summaryEl.getAttribute(`data-${lang}`) ||
+        summaryEl.getAttribute('data-en') ||
+        summaryEl.textContent ||
+        '';
+
+    // 1) Manual markup wins (lets admin assign colors precisely).
+    const manual = parseManualHighlightMarkup(raw);
+    if (manual != null) {
+        summaryEl.innerHTML = manual;
+        return;
+    }
+
+    const enRules = [
+        { re: /\bAI\b/i, cls: 'code-tok-type' },
+        { re: /\b(product|interaction|design)\b/gi, cls: 'code-tok-var' },
+        { re: /\barchitecture\b/gi, cls: 'code-tok-kw' },
+        { re: /\bclarity\b/gi, cls: 'code-tok-fn' },
+        { re: /\bcraft\b/gi, cls: 'code-tok-fn' },
+        { re: /\bshipping\b/gi, cls: 'code-tok-fn' },
+        { re: /[+.,]/g, cls: 'code-tok-op' }
+    ];
+
+    const zhRules = [
+        { re: /\bAI\b/g, cls: 'code-tok-type' },
+        { re: /产品|交互设计|交互|设计/g, cls: 'code-tok-var' },
+        { re: /建筑|建筑背景/g, cls: 'code-tok-kw' },
+        { re: /清晰表达|体验细节|做出来/g, cls: 'code-tok-fn' },
+        { re: /[+，。、]/g, cls: 'code-tok-op' }
+    ];
+
+    const rules = lang && String(lang).toLowerCase().startsWith('zh') ? zhRules : enRules;
+    summaryEl.innerHTML = buildHighlightedHtml(raw, rules);
+}
+
+// Expose for admin-sync updates.
+window.setHeroSummaryHighlighted = setHeroSummaryHighlighted;
+
+function buildHeroSummarySegments(rootEl) {
+    // Flatten highlighted DOM into segments: { classes: string[], text: string }
+    const segments = [];
+    const walk = (node, classes) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            // Only keep code token classes. Never propagate container/layout classes like "hero-summary".
+            const safeClasses = (classes || []).filter((c) => String(c || '').startsWith('code-tok-'));
+            segments.push({ classes: safeClasses, text: node.nodeValue || '' });
+            return;
+        }
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        const el = node;
+        const own = el.classList && el.classList.length ? Array.from(el.classList) : [];
+        const nextClasses = own.length
+            ? Array.from(new Set([...(classes || []), ...own]))
+            : (classes || []);
+        for (const child of Array.from(el.childNodes)) walk(child, nextClasses);
+    };
+    walk(rootEl, []);
+    return segments.filter(s => s.text);
+}
+
+function renderHeroSummaryTyping(summaryEl, lang) {
+    if (!summaryEl) return;
+
+    // Build the final highlighted content first.
+    const prevLock = heroSummaryTypingLock;
+    heroSummaryTypingLock = false;
+    const highlighted = summaryEl.cloneNode(false);
+    highlighted.removeAttribute('data-typing-pending');
+    setHeroSummaryHighlighted(highlighted, lang);
+    heroSummaryTypingLock = prevLock;
+    const segments = buildHeroSummarySegments(highlighted);
+
+    // Measure the final box before this task paints, keeping the hero steady while typing.
+    summaryEl.innerHTML = highlighted.innerHTML;
+    summaryEl.style.minHeight = `${summaryEl.getBoundingClientRect().height}px`;
+
+    // ChatGPT-like: type characters into the existing layout (natural wrapping),
+    // while preserving highlight spans.
+    summaryEl.innerHTML = '';
+    summaryEl.removeAttribute('data-typing-pending');
+
+    const totalChars = segments.reduce((n, s) => n + s.text.length, 0);
+    const totalMs = 5000;
+    const msPerChar = totalChars ? Math.max(12, Math.min(40, Math.floor(totalMs / totalChars))) : 20;
+
+    let segIndex = 0;
+    let charIndex = 0;
+    let currentSpan = null;
+    let currentSpanClassesKey = '';
+
+    const ensureSpan = (classes) => {
+        const key = (classes || []).join(' ');
+        if (!currentSpan || key !== currentSpanClassesKey) {
+            currentSpanClassesKey = key;
+            if (key) {
+                currentSpan = document.createElement('span');
+                currentSpan.className = key;
+                summaryEl.appendChild(currentSpan);
+            } else {
+                currentSpan = null;
+            }
+        }
+    };
+
+    const appendChar = (cls, ch) => {
+        ensureSpan(cls);
+        if (currentSpan) currentSpan.appendChild(document.createTextNode(ch));
+        else summaryEl.appendChild(document.createTextNode(ch));
+    };
+
+    const tick = () => {
+        if (!heroSummaryTypingActive) return;
+        if (segIndex >= segments.length) {
+            // Typing done: allow language/sync flows to rewrite normally.
+            heroSummaryTypingLock = false;
+            summaryEl.style.minHeight = '';
+            return;
+        }
+
+        const seg = segments[segIndex];
+        const ch = seg.text[charIndex];
+        appendChar(seg.classes, ch);
+        charIndex += 1;
+
+        if (charIndex >= seg.text.length) {
+            segIndex += 1;
+            charIndex = 0;
+        }
+
+        heroSummaryTypingTimerId = window.setTimeout(tick, msPerChar);
+    };
+
+    tick();
+}
+
+let heroSummaryTypingActive = false;
+let heroSummaryTypingTimerId = 0;
+let heroSummaryTypingLock = false;
+function stopHeroSummaryTyping() {
+    heroSummaryTypingActive = false;
+    heroSummaryTypingLock = false;
+    if (heroSummaryTypingTimerId) {
+        window.clearTimeout(heroSummaryTypingTimerId);
+        heroSummaryTypingTimerId = 0;
+    }
+}
+window.stopHeroSummaryTyping = stopHeroSummaryTyping;
+
+function initHeroSummaryTypingOnce() {
+    const summaryEl = document.querySelector('.hero-summary');
+    if (!summaryEl) return;
+
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+        summaryEl.removeAttribute('data-typing-pending');
+        setHeroSummaryHighlighted(summaryEl, document.documentElement.lang === 'zh' ? 'zh' : 'en');
+        return;
+    }
+
+    // Start after synchronous initialization, without exposing the complete text first.
+    heroSummaryTypingActive = true;
+    heroSummaryTypingLock = true;
+    const lang = document.documentElement.getAttribute('lang') === 'zh' ? 'zh' : 'en';
+
+    summaryEl.textContent = '';
+    heroSummaryTypingTimerId = window.setTimeout(() => {
+        heroSummaryTypingTimerId = 0;
+        if (!heroSummaryTypingActive) return;
+        // Start from empty box and type once.
+        summaryEl.textContent = '';
+        renderHeroSummaryTyping(summaryEl, lang);
+    }, 0);
+}
+
+// 语言切换功能
+function initLanguageToggle() {
+    const languageToggle = document.getElementById('language-toggle');
+    const langText = languageToggle.querySelector('.lang-text');
+    const nameElement = document.querySelector('.name');
+    
+    // 定义英文, 简体中文和繁体中文的内容映射
+    const translations = {
+        'en': {
+            // 导航
+            'nav_education': 'Education',
+            'nav_experience': 'Experience',
+            'nav_papers': 'Projects',
+            'nav_awards': 'Awards',
+            'nav_footprints': 'Footprints',
+            'lang_toggle': '简体中文',
+            
+            // 章节标题
+            'section_education': 'Education',
+            'section_experience': 'Work Experience',
+            'section_papers': 'Research Projects',
+            'section_awards': 'Awards',
+            'section_footprints': 'My Footprints',
+            'section_social': 'Connect With Me',
+            
+            // 教育经历
+            'education_manchester': 'University of Manchester',
+            'education_manchester_meta': 'QS Ranking: 35',
+            'education_manchester_details': 'MA in Architecture and Urban Planning',
+            'education_manchester_time': '2025.09 - 2026.12',
+            'education_manchester_research': 'Core Modules: Urban Design, Architectural Design Studio, Urban Research Methods, Quantitative Research Methods, Urban Analytics, Sustainable Urban Development',
+            
+            'education_sju': 'Shandong Jianzhu University',
+            'education_sju_meta': 'National First-Class Undergraduate Program',
+            'education_sju_details': 'School of Architecture and Urban Planning | Bachelor of Architecture',
+            'education_sju_time': '2020.09 - 2025.07',
+            'education_sju_awards': 'Honors: First-Class Scholarship, Outstanding Student Cadre Model, Second Prize in the National English Competition',
+            
+            // 工作经历
+            'exp_bytedance_title': 'ByteDance (Shanghai) - Douyin E-commerce',
+            'exp_bytedance_meta': 'Product Operations Intern | Doudou Farm Growth Project',
+            'exp_bytedance_time': '2025.12 - 2026.02',
+
+            'exp_shein_title': 'SHEIN (Shanghai)',
+            'exp_shein_meta': 'Product Manager Intern | User Growth & Referral Program',
+            'exp_shein_time': '2025.06 - 2025.08',
+            
+            'exp_matconstruct_title': 'Matconstruct - Building Materials Learning Mini Program',
+            'exp_matconstruct_meta': 'Product Design Support (Product Assistant)',
+            'exp_matconstruct_time': '2023.05 - 2023.09',
+            
+            'exp_media_title': 'Shandong Jianzhu University New Media Center',
+            'exp_media_meta': 'Deputy Head, Technology Department',
+            'exp_media_time': '2021.09 - 2022.07',
+            
+            // 技能
+            'skill_prototype': 'Prototype Design',
+            'skill_ai_programming': 'AI Programming',
+            'skill_ai_drawing': 'AI Drawing',
+            'skill_3d': '3D Modeling',
+            
+            // 页脚
+            'footer_copyright': '© 2026 Cristy Fan. All Rights Reserved.',
+            
+            // 研究项目
+            'project_title_1': 'Digital Regeneration and Urban Vitality Strategy for the Old Trafford Stadium Area',
+            'project_desc_1': 'Research Member | University of Manchester',
+            
+            // 位置
+            'location': 'Manchester, UK'
+        },
+        'zh-CN': {
+            // 导航
+            'nav_education': '教育经历',
+            'nav_experience': '工作经历',
+            'nav_papers': '研究项目',
+            'nav_awards': '奖项',
+            'nav_footprints': '足迹',
+            'lang_toggle': '繁體中文',
+            
+            // 章节标题
+            'section_education': '教育背景',
+            'section_experience': '工作与实习经历',
+            'section_papers': '研究项目',
+            'section_awards': '获奖经历',
+            'section_footprints': '我的足迹',
+            'section_social': '联系方式',
+            
+            // 教育经历
+            'education_manchester': '曼彻斯特大学',
+            'education_manchester_meta': 'QS排名: 35',
+            'education_manchester_details': '建筑与城市规划文学硕士',
+            'education_manchester_time': '2025.09 - 2026.12',
+            'education_manchester_research': '核心课程：城市设计、建筑设计、城市研究方法、定量研究方法、城市分析、可持续城市发展',
+            
+            'education_sju': '山东建筑大学',
+            'education_sju_meta': '国家一流本科专业',
+            'education_sju_details': '建筑城规学院 | 建筑学学士',
+            'education_sju_time': '2020.09 - 2025.07',
+            'education_sju_awards': '荣誉：一等奖学金、优秀学生干部标兵、全国英语大赛二等奖',
+            
+            // 工作经历
+            'exp_bytedance_title': '字节跳动(上海) - 抖音电商',
+            'exp_bytedance_meta': '产品运营实习生 | 兜兜农场增长项目',
+            'exp_bytedance_time': '2025.12 - 2026.02',
+
+            'exp_shein_title': '希音 SHEIN(上海)',
+            'exp_shein_meta': '产品经理实习生 | 用户增长与裂变项目',
+            'exp_shein_time': '2025.06 - 2025.08',
+            
+            'exp_matconstruct_title': 'Matconstruct 建筑材料学习小程序',
+            'exp_matconstruct_meta': '产品设计支持(产品助理)',
+            'exp_matconstruct_time': '2023.05 - 2023.09',
+            
+            'exp_media_title': '山东建筑大学新媒体中心',
+            'exp_media_meta': '技术部副部长',
+            'exp_media_time': '2021.09 - 2022.07',
+            
+            // 技能
+            'skill_prototype': '原型设计',
+            'skill_ai_programming': 'AI 编程',
+            'skill_ai_drawing': 'AI 绘画',
+            'skill_3d': '3D建模',
+            
+            // 页脚
+            'footer_copyright': '© 2026 樊语响 Cristy Fan. 版权所有。',
+            
+            // 研究项目
+            'project_title_1': '老特拉福德体育场周边区域数字化更新与城市活力策略研究',
+            'project_desc_1': '项目成员 | 曼彻斯特大学',
+            
+            // 位置
+            'location': '英国曼彻斯特'
+        },
+        'zh-TW': {
+            // 導航
+            'nav_education': '教育經歷',
+            'nav_experience': '工作經歷',
+            'nav_papers': '研究項目',
+            'nav_awards': '獎項',
+            'nav_footprints': '足跡',
+            'lang_toggle': 'English',
+            
+            // 章節標題
+            'section_education': '教育背景',
+            'section_experience': '工作與實習經歷',
+            'section_papers': '研究項目',
+            'section_awards': '獲獎經歷',
+            'section_footprints': '我的足跡',
+            'section_social': '聯繫方式',
+            
+            // 教育經歷
+            'education_manchester': '曼徹斯特大學',
+            'education_manchester_meta': 'QS排名: 35',
+            'education_manchester_details': '建築與城市規劃文學碩士',
+            'education_manchester_time': '2025.09 - 2026.12',
+            'education_manchester_research': '核心課程：城市設計、建築設計、城市研究方法、定量研究方法、城市分析、可持續城市發展',
+            
+            'education_sju': '山東建築大學',
+            'education_sju_meta': '國家一流本科專業',
+            'education_sju_details': '建築城規學院 | 建築學學士',
+            'education_sju_time': '2020.09 - 2025.07',
+            'education_sju_awards': '榮譽：一等獎學金、優秀學生幹部標兵、全國英語大賽二等獎',
+            
+            // 工作經歷
+            'exp_bytedance_title': '字節跳動(上海) - 抖音電商',
+            'exp_bytedance_meta': '產品運營實習生 | 兜兜農場增長項目',
+            'exp_bytedance_time': '2025.12 - 2026.02',
+
+            'exp_shein_title': '希音 SHEIN(上海)',
+            'exp_shein_meta': '產品經理實習生 | 用戶增長與裂變項目',
+            'exp_shein_time': '2025.06 - 2025.08',
+            
+            'exp_matconstruct_title': 'Matconstruct 建築材料學習小程式',
+            'exp_matconstruct_meta': '產品設計支持(產品助理)',
+            'exp_matconstruct_time': '2023.05 - 2023.09',
+            
+            'exp_media_title': '山東建築大學新媒體中心',
+            'exp_media_meta': '技術部副部長',
+            'exp_media_time': '2021.09 - 2022.07',
+            
+            // 技能
+            'skill_prototype': '原型設計',
+            'skill_ai_programming': 'AI 編程',
+            'skill_ai_drawing': 'AI 繪畫',
+            'skill_3d': '3D建模',
+            
+            // 頁腳
+            'footer_copyright': '© 2026 樊語響 Cristy Fan. 版權所有。',
+            
+            // 研究項目
+            'project_title_1': '老特拉福德體育場周邊區域數字化更新與城市活力策略研究',
+            'project_desc_1': '項目成員 | 曼徹斯特大學',
+            
+            // 位置
+            'location': '英國曼徹斯特'
+        }
+    };
+    
+    // 当前语言，默认为英文
+    let currentLang = 'en';
+    
+    // 切换语言函数
+    function toggleLanguage() {
+        // 循环切换语言: 英文 -> 简体中文 -> 繁体中文 -> 英文
+        if (currentLang === 'en') {
+            currentLang = 'zh-CN';
+        } else if (currentLang === 'zh-CN') {
+            currentLang = 'zh-TW';
+        } else {
+            currentLang = 'en';
+        }
+        
+        // 更新页面语言
+        updatePageLanguage();
+    }
+    
+    // 更新页面语言
+		    function updatePageLanguage() {
+	        // 更新导航链接
+	        document.querySelectorAll('.nav-link').forEach(link => {
+	            const key = link.getAttribute('href').substring(1);
+	            link.textContent = translations[currentLang][`nav_${key}`];
+	        });
+        
+        // 更新侧边栏链接
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            const key = link.getAttribute('href').substring(1);
+            link.textContent = translations[currentLang][`nav_${key}`];
+        });
+        
+        // 更新各部分标题
+        document.querySelectorAll('.section-title').forEach(title => {
+            const section = title.closest('section').id;
+            if (translations[currentLang][`section_${section}`]) {
+                title.textContent = translations[currentLang][`section_${section}`];
+            }
+        });
+        
+	        // 更新姓名显示
+	        if (nameElement) {
+	            nameElement.textContent = nameElement.getAttribute(`data-${currentLang}`);
+	        }
+
+	        // 更新Hero文案（桌面端展示）
+	        const heroKicker = document.querySelector('.hero-kicker');
+	        if (heroKicker) {
+	            const kickerText = heroKicker.getAttribute(`data-${currentLang}`) || heroKicker.getAttribute('data-en') || '';
+	            const kickerSpan = heroKicker.querySelector('.hero-kicker-text');
+	            if (kickerSpan) kickerSpan.textContent = kickerText;
+	        }
+
+		        const heroSummary = document.querySelector('.hero-summary');
+		        if (heroSummary) {
+		            setHeroSummaryHighlighted(heroSummary, currentLang);
+		        }
+
+	        const heroCta = document.querySelector('.hero-cta');
+	        if (heroCta) {
+	            const ctaMap = {
+	                'en': ['Explore Experience', 'View Projects'],
+	                'zh-CN': ['查看经历', '查看项目'],
+	                'zh-TW': ['查看經歷', '查看項目']
+	            };
+	            const [t1, t2] = ctaMap[currentLang] || ctaMap.en;
+	            const links = heroCta.querySelectorAll('a');
+	            if (links[0]) links[0].textContent = t1;
+	            if (links[1]) links[1].textContent = t2;
+	        }
+
+	        // 更新Hero位置
+	        const locationEl = document.querySelector('.location-info');
+	        if (locationEl && translations[currentLang]['location']) {
+	            locationEl.innerHTML = `<i class="fas fa-map-marker-alt"></i>${translations[currentLang]['location']}`;
+	        }
+	        
+        // 更新教育经历
+        const educationItems = document.querySelectorAll('.education-item');
+        if(educationItems.length >= 2) {
+            // 曼彻斯特大学
+            const manchester = educationItems[0];
+            manchester.querySelector('h3').textContent = translations[currentLang]['education_manchester'];
+            manchester.querySelector('.education-meta').textContent = translations[currentLang]['education_manchester_meta'];
+            manchester.querySelector('.education-details').textContent = translations[currentLang]['education_manchester_details'];
+            manchester.querySelector('.education-time').textContent = translations[currentLang]['education_manchester_time'];
+            manchester.querySelector('.education-research').textContent = translations[currentLang]['education_manchester_research'];
+            
+            // 山东建筑大学
+            const sju = educationItems[1];
+            sju.querySelector('h3').textContent = translations[currentLang]['education_sju'];
+            sju.querySelector('.education-meta').textContent = translations[currentLang]['education_sju_meta'];
+            sju.querySelector('.education-details').textContent = translations[currentLang]['education_sju_details'];
+            sju.querySelector('.education-time').textContent = translations[currentLang]['education_sju_time'];
+            sju.querySelector('.education-awards').textContent = translations[currentLang]['education_sju_awards'];
+        }
+        
+        // 更新工作经历
+        const experienceItems = document.querySelectorAll('.experience-item');
+        if(experienceItems.length >= 4) {
+            // 字节跳动
+            const bytedance = experienceItems[0];
+            bytedance.querySelector('h3').textContent = translations[currentLang]['exp_bytedance_title'];
+            bytedance.querySelector('.experience-meta').textContent = translations[currentLang]['exp_bytedance_meta'];
+            bytedance.querySelector('.experience-time').textContent = translations[currentLang]['exp_bytedance_time'];
+
+            // SHEIN
+            const shein = experienceItems[1];
+            shein.querySelector('h3').textContent = translations[currentLang]['exp_shein_title'];
+            shein.querySelector('.experience-meta').textContent = translations[currentLang]['exp_shein_meta'];
+            shein.querySelector('.experience-time').textContent = translations[currentLang]['exp_shein_time'];
+
+            // Matconstruct
+            const matConstruct = experienceItems[2];
+            matConstruct.querySelector('h3').textContent = translations[currentLang]['exp_matconstruct_title'];
+            matConstruct.querySelector('.experience-meta').textContent = translations[currentLang]['exp_matconstruct_meta'];
+            matConstruct.querySelector('.experience-time').textContent = translations[currentLang]['exp_matconstruct_time'];
+
+            // 新媒体中心
+            const media = experienceItems[3];
+            media.querySelector('h3').textContent = translations[currentLang]['exp_media_title'];
+            media.querySelector('.experience-meta').textContent = translations[currentLang]['exp_media_meta'];
+            media.querySelector('.experience-time').textContent = translations[currentLang]['exp_media_time'];
+        }
+        
+        // 更新技能
+        const skillCategories = document.querySelectorAll('.skill-category');
+        if(skillCategories.length >= 4) {
+            skillCategories[0].querySelector('h3').textContent = translations[currentLang]['skill_prototype'];
+            skillCategories[1].querySelector('h3').textContent = translations[currentLang]['skill_ai_programming'];
+            skillCategories[2].querySelector('h3').textContent = translations[currentLang]['skill_ai_drawing'];
+            skillCategories[3].querySelector('h3').textContent = translations[currentLang]['skill_3d'];
+        }
+        
+        // 更新页脚版权信息
+        const copyrightEl = document.getElementById('copyright-text') || document.querySelector('footer p');
+        if (copyrightEl) {
+            copyrightEl.textContent = translations[currentLang]['footer_copyright'];
+        }
+        
+        // 更新语言切换按钮文本
+        langText.textContent = translations[currentLang]['lang_toggle'];
+        
+        // 更新研究项目
+        const projectItems = document.querySelectorAll('#papers .timeline-item');
+        if (projectItems.length > 0) {
+            const firstTitle = projectItems[0].querySelector('h3');
+            if (firstTitle) {
+                firstTitle.textContent = translations[currentLang]['project_title_1'];
+            }
+        }
+    }
+    
+    // 注册语言切换事件
+    languageToggle.addEventListener('click', toggleLanguage);
+}
+
+// 滚动动画功能
+function initScrollAnimation() {
+    initSectionReveal();
+    // 获取所有部分
+    const sections = document.querySelectorAll('.section');
+    
+    // 设置观察者选项
+    const options = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+    
+    // 创建观察者
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, options);
+    
+    // 观察每个部分
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+}
+
+function initSectionReveal() {
+    const sections = document.querySelectorAll('#education, #experience, #papers, #awards');
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!('IntersectionObserver' in window) || motion.matches) return;
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('section-revealed');
+            observer.unobserve(entry.target);
+        });
+    }, { rootMargin: '0px 0px -40px 0px', threshold: 0 });
+
+    const observed = new WeakSet();
+    const observeTargets = section => {
+        section.querySelectorAll('.section-title, .education-item, .experience-item, .timeline-item').forEach(target => {
+            if (observed.has(target)) return;
+            observed.add(target);
+            observer.observe(target);
+        });
+    };
+    // Admin data can replace section items after initial page setup.
+    const updates = new MutationObserver(() => sections.forEach(observeTargets));
+    sections.forEach(section => {
+        section.classList.add('section-reveal-enabled');
+        observeTargets(section);
+        updates.observe(section, { childList: true, subtree: true });
+    });
+    motion.addEventListener('change', event => {
+        if (!event.matches) return;
+        observer.disconnect();
+        updates.disconnect();
+        sections.forEach(section => section.classList.remove('section-reveal-enabled'));
+    });
+}
+
+function initHeroOverlayFade() {
+    const hero = document.querySelector('.hero');
+    const heroContent = document.querySelector('.hero-content');
+    const heroKicker = document.querySelector('.hero-kicker');
+    const education = document.getElementById('education');
+    const experience = document.getElementById('experience');
+    if (!hero || !heroContent || !heroKicker || !education || !experience) return;
+
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+    function updateHeroFade() {
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+        const educationRect = education.getBoundingClientRect();
+        const experienceRect = experience.getBoundingClientRect();
+        const kickerRect = heroKicker.getBoundingClientRect();
+
+        const fadeStartLine = kickerRect.top;
+        const fadeDistance = Math.max(220, experienceRect.top - fadeStartLine - viewportHeight * 0.08);
+        const progress = clamp((fadeStartLine - educationRect.top) / fadeDistance, 0, 1);
+        const opacity = 1 - progress;
+        heroContent.style.setProperty('--hero-content-opacity', opacity.toFixed(3));
+
+        if (progress >= 0.999) {
+            heroContent.setAttribute('aria-hidden', 'true');
+        } else {
+            heroContent.removeAttribute('aria-hidden');
+        }
+    }
+
+    window.addEventListener('scroll', updateHeroFade, { passive: true });
+    window.addEventListener('resize', updateHeroFade);
+    window.addEventListener('load', updateHeroFade);
+    updateHeroFade();
+}
+
+// 侧边栏高亮功能
+function initSidebarHighlight() {
+    // 获取所有部分和侧边栏链接
+    const sections = document.querySelectorAll('.section');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    // 设置观察者选项
+    const options = {
+        root: null,
+        rootMargin: '-20% 0px -70% 0px',
+        threshold: 0
+    };
+    
+    // 创建观察者
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // 获取当前部分的ID
+                const id = entry.target.getAttribute('id');
+                
+                // 移除所有链接的active类
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // 为当前部分的侧边栏链接添加active类
+                const sidebarLink = document.querySelector(`.sidebar-link[href="#${id}"]`);
+                if (sidebarLink) {
+                    sidebarLink.classList.add('active');
+                }
+                
+                // 移除所有导航链接的active类
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // 为当前部分的导航链接添加active类
+                const navLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                if (navLink) {
+                    navLink.classList.add('active');
+                }
+            }
+        });
+    }, options);
+    
+    // 观察每个部分
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+    
+    // 初始化侧边栏切换按钮
+    initSidebarToggle();
+}
+
+// 侧边栏切换功能
+function initSidebarToggle() {
+    const sidebar = document.querySelector('.sidebar');
+    
+    // 创建侧边栏切换按钮
+    const toggleButton = document.createElement('button');
+    toggleButton.className = 'sidebar-toggle';
+    toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    document.body.appendChild(toggleButton);
+    
+    // 添加切换事件
+    toggleButton.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        toggleButton.classList.toggle('active');
+    });
+}
+
+// 初始化汉堡菜单功能
+function initMobileMenu() {
+    const hamburgerMenu = document.createElement('div');
+    hamburgerMenu.className = 'hamburger-menu';
+    hamburgerMenu.innerHTML = `
+        <span></span>
+        <span></span>
+        <span></span>
+    `;
+    
+    const nav = document.querySelector('nav');
+    const navLinks = document.querySelector('.nav-links').cloneNode(true);
+    
+    // 创建移动端菜单
+    const mobileMenu = document.createElement('div');
+    mobileMenu.className = 'mobile-menu';
+    mobileMenu.appendChild(navLinks);
+    
+    // 将汉堡菜单和移动端菜单添加到DOM
+    nav.insertBefore(hamburgerMenu, nav.firstChild);
+    document.body.appendChild(mobileMenu);
+    
+    // 添加汉堡菜单点击事件
+    hamburgerMenu.addEventListener('click', () => {
+        hamburgerMenu.classList.toggle('active');
+        mobileMenu.classList.toggle('active');
+    });
+    
+    // 添加移动端菜单链接点击事件（点击后关闭菜单）
+    const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+    mobileMenuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            hamburgerMenu.classList.remove('active');
+            mobileMenu.classList.remove('active');
+        });
+    });
+}
+
+// 添加地球图标到语言切换按钮
+function addLanguageIcon() {
+    const langToggle = document.getElementById('language-toggle');
+    const langText = langToggle.querySelector('.lang-text');
+    
+    // 创建图标元素
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-globe language-icon';
+    
+    // 将图标插入到按钮的开头
+    langToggle.insertBefore(icon, langText);
+}
+
+// 世界地图足迹功能
+function initWorldMap() {
+    // Switched to 3D Earth globe (see footprints-globe.js).
+    // Keep initWorldMap() as an entry point, but bail out before legacy D3 code runs.
+    if (typeof window.refreshFootprintsGlobe === 'function') {
+        // Remove any legacy SVG if it exists (cached DOM).
+        try {
+            const wm = document.getElementById('world-map');
+            const oldSvg = wm ? wm.querySelector('svg') : null;
+            if (oldSvg) oldSvg.remove();
+        } catch (e) {}
+        window.refreshFootprintsGlobe();
+        return;
+    }
+
+    if (typeof d3 === 'undefined') return;
+
+    // 检查是否有从localStorage加载的自定义足迹数据
+    let customFootprintsData = null;
+    let websiteData = {};
+    
+    try {
+        // 优先从localStorage获取数据
+        const savedData = localStorage.getItem('websiteData');
+        if (savedData) {
+            websiteData = JSON.parse(savedData);
+            
+            // 确保footprints字段存在
+            if (!websiteData.footprints) {
+                websiteData.footprints = [];
+            }
+            if (!websiteData.anonymousMessages) {
+                websiteData.anonymousMessages = [];
+            }
+            
+            // 如果从localStorage读取到的足迹数据不为空，使用它
+            if (websiteData.footprints && Array.isArray(websiteData.footprints) && websiteData.footprints.length > 0) {
+                console.log(`从localStorage读取到${websiteData.footprints.length}条足迹数据`);
+                
+                // 转换格式为地图使用的格式（支持新版结构：fp.place / fp.image）
+                customFootprintsData = websiteData.footprints.map(fp => {
+                    const place = fp && fp.place && typeof fp.place === 'object' ? fp.place : null;
+                    const city = place && place.city ? String(place.city) : String(fp.city || '');
+                    const country = place && place.country ? String(place.country) : String(fp.country || '');
+                    const lat = place && isFinite(place.lat) ? Number(place.lat) : parseFloat(fp.lat);
+                    const lng = place && isFinite(place.lng) ? Number(place.lng) : parseFloat(fp.lng);
+                    const displayName = place && place.displayName
+                        ? String(place.displayName)
+                        : `${city}${country ? ', ' + country : ''}`;
+
+                    const imageUrl =
+                        (fp.image && typeof fp.image === 'object' ? (fp.image.url || '') : fp.image) ||
+                        fp.imageUrl ||
+                        'https://via.placeholder.com/400x300?text=' + encodeURIComponent(city || 'Footprint');
+
+                    return {
+                        // Geography text is displayed in English. New admin flow stores English displayName.
+                        // Legacy entries (Chinese) will still show as-is until re-saved.
+                        name: displayName,
+                        location: [lng, lat],
+                        intensity: fp.intensity || 1,
+                        image: imageUrl,
+                        date: fp.visitedAt || fp.year || '',
+                        description: fp.description || ''
+                    };
+                }).filter(d => isFinite(d.location[0]) && isFinite(d.location[1]));
+            } else {
+                console.log('localStorage中没有足迹数据，将使用默认数据');
+            }
+        }
+    } catch (e) {
+        console.error('读取自定义足迹数据失败:', e);
+    }
+    
+    // 设置地图尺寸
+    const width = document.getElementById('map-container').offsetWidth;
+    const height = 600;
+
+    // Fullscreen controls (button in index.html)
+    
+    // 判断当前是否为深色模式
+    const isDarkMode = document.documentElement.classList.contains('dark-mode');
+    
+    // 创建SVG元素
+    const svg = d3.select('#world-map')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .attr('style', `background-color: ${getComputedStyle(document.documentElement).getPropertyValue('--light-gray')}`);
+    
+    // 创建地图组
+    const g = svg.append('g');
+    
+    // 创建投影
+    const projection = d3.geoMercator()
+        .scale(width / 2 / Math.PI)
+        .translate([width / 2, height / 1.5]);
+    
+    // 创建路径生成器
+    const path = d3.geoPath()
+        .projection(projection);
+    
+    // 定义足迹数据
+    // 1-10 表示访问的频率/强度，10最高
+    const defaultFootprints = [
+        { name: "Manchester, UK", location: [-2.2426, 53.4808], intensity: 10, image: "assets/images/manchester.jpg" },
+        { name: "Jinan, China", location: [117.0000, 36.6510], intensity: 9, image: "assets/images/jinan.jpg" },
+        { name: "Shanghai, China", location: [121.4737, 31.2304], intensity: 8, image: "assets/images/shanghai.jpg" }
+    ];
+    
+    // 使用自定义数据或默认数据
+    const footprints = customFootprintsData || defaultFootprints;
+    
+    // 如果使用的是默认数据，并且localStorage中没有足迹数据，保存默认数据到localStorage
+    if (!customFootprintsData && websiteData) {
+        try {
+            // 转换默认足迹数据为localStorage存储格式（新版结构）
+            const defaultFootprintsForStorage = defaultFootprints.map(fp => {
+                const city = fp.name.split(',')[0] || fp.name;
+                const country = fp.name.includes(',') ? fp.name.split(',')[1].trim() : 'China';
+                const displayName = fp.name.includes(',') ? fp.name : `${city}, ${country}`;
+                return {
+                    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                    place: {
+                        id: '',
+                        displayName,
+                        city,
+                        country,
+                        countryCode: '',
+                        lat: fp.location[1],
+                        lng: fp.location[0],
+                        source: 'default'
+                    },
+                    visitedAt: '',
+                    description: '',
+                    intensity: fp.intensity || 1,
+                    image: { url: fp.image || '', mode: 'url' }
+                };
+            });
+            
+            // 更新websiteData并保存
+            websiteData.footprints = defaultFootprintsForStorage;
+            websiteData.anonymousMessages = Array.isArray(websiteData.anonymousMessages) ? websiteData.anonymousMessages : [];
+            localStorage.setItem('websiteData', JSON.stringify(websiteData));
+            console.log('已将默认足迹数据保存到localStorage');
+        } catch (e) {
+            console.error('保存默认足迹数据失败:', e);
+        }
+    }
+    
+    // 获取CSS变量的值
+    const countryFill = getComputedStyle(document.documentElement).getPropertyValue('--country-fill').trim();
+    const countryStroke = getComputedStyle(document.documentElement).getPropertyValue('--country-stroke').trim();
+    const footprintColor = getComputedStyle(document.documentElement).getPropertyValue('--footprint-color').trim();
+    
+    // 创建缩略图预览容器，用于鼠标悬停时显示 - 改为文档正文追加
+    const tooltip = d3.select('body')
+        .append('div')
+        .attr('class', 'location-thumbnail')
+        .style('position', 'absolute')
+        .style('visibility', 'hidden')
+        .style('overflow', 'hidden')
+        .style('z-index', '1000')
+        .style('pointer-events', 'none')
+        .style('opacity', '0')
+        .style('transform', 'translateY(10px) scale(0.95)')
+        .style('transition', 'all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)');
+
+    // 加载世界地图数据
+    d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+        .then(data => {
+            // 转换TopoJSON到GeoJSON
+            const countries = topojson.feature(data, data.objects.countries);
+            
+            // 添加国家
+            g.selectAll('path')
+                .data(countries.features)
+                .enter()
+                .append('path')
+                .attr('d', path)
+                .attr('class', 'country')
+                .attr('fill', countryFill)
+                .attr('stroke', countryStroke)
+                .attr('stroke-width', 0.5);
+            
+            // 添加足迹点 - 使用简单的蓝色圆点并加入律动动画
+            const footprintPoints = g.selectAll('.footprint')
+                .data(footprints)
+                .enter()
+                .append('circle')
+                .attr('cx', d => projection(d.location)[0])
+                .attr('cy', d => projection(d.location)[1])
+                .attr('r', d => Math.sqrt(d.intensity) * 2) // 初始半径
+                .attr('fill', footprintColor)
+                .attr('fill-opacity', 0.8)
+                .attr('stroke', '#ffffff')
+                .attr('stroke-width', 0.5)
+                .attr('class', 'footprint');
+                
+            // 添加律动动画效果
+            footprintPoints.each(function(d, i) {
+                // 为每个点添加不同的动画延迟，使得律动感更强
+                const delay = i % 5 * 300;  // 将点分成5组，每组延迟300ms
+                
+                d3.select(this)
+                    .style('transform-origin', 'center center')
+                    .style('transform-box', 'fill-box')
+                    .transition()
+                    .duration(1500)  // 动画持续时间
+                    .delay(delay)    // 错开动画开始时间
+                    .attr('r', d => Math.sqrt(d.intensity) * 2.2)  // 轻微放大
+                    .attr('fill-opacity', 0.9)
+                    .transition()
+                    .duration(1500)
+                    .attr('r', d => Math.sqrt(d.intensity) * 1.8)  // 轻微缩小
+                    .attr('fill-opacity', 0.7)
+                    .on('end', function repeat() {  // 动画完成后循环
+                        d3.select(this)
+                            .transition()
+                            .duration(1500)
+                            .attr('r', d => Math.sqrt(d.intensity) * 2.2)
+                            .attr('fill-opacity', 0.9)
+                            .transition()
+                            .duration(1500)
+                            .attr('r', d => Math.sqrt(d.intensity) * 1.8)
+                            .attr('fill-opacity', 0.7)
+                            .on('end', repeat);  // 循环动画
+                    });
+            });
+            
+            // 为足迹点添加交互事件
+            footprintPoints
+                .on('mouseover', function(event, d) {
+                    // 鼠标悬停时放大圆点
+                    d3.select(this)
+                        .interrupt() // 中断现有动画
+                        .transition()
+                        .duration(300)
+                        .attr('r', Math.sqrt(d.intensity) * 3)
+                        .attr('fill-opacity', 1);
+                    
+                    const title = d.name || '';
+                    const date = d.date || '';
+                    const desc = d.description || '';
+                    const safeImg = d.image || '';
+
+                    tooltip.html(`
+                        <div class="lt-image">
+                            ${safeImg ? `<img src="${safeImg}" alt="${escapeHtml(title)}">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.55);font-size:12px;">No image</div>`}
+                        </div>
+                        <div class="lt-body">
+                            <div class="lt-title">${escapeHtml(title)}</div>
+                            ${date ? `<div class="lt-date">${escapeHtml(date)}</div>` : ``}
+                            ${desc ? `<div class="lt-desc">${escapeHtml(desc)}</div>` : ``}
+                        </div>
+                    `)
+                    .style('left', `${event.pageX + 15}px`)
+                    .style('top', `${event.pageY - 100}px`)
+                    .style('visibility', 'visible')
+                    .style('opacity', '1')
+                    .style('transform', 'translateY(0) scale(1)');
+                })
+                .on('mousemove', function(event) {
+                    // 跟随鼠标移动
+                    tooltip
+                        .style('left', `${event.pageX + 15}px`)
+                        .style('top', `${event.pageY - 100}px`);
+                })
+                .on('mouseout', function(event, d) {
+                    // 鼠标移出时恢复律动动画
+                    const thisPoint = d3.select(this);
+                    thisPoint.interrupt(); // 中断现有动画
+                    
+                    // 计算当前点在数组中的索引
+                    const index = footprints.findIndex(fp => fp.name === d.name);
+                    const delay = index % 5 * 300;
+                    
+                    // 恢复律动动画
+                    thisPoint
+                        .transition()
+                        .duration(1500)
+                        .delay(delay)
+                        .attr('r', d => Math.sqrt(d.intensity) * 2.2)
+                        .attr('fill-opacity', 0.9)
+                        .transition()
+                        .duration(1500)
+                        .attr('r', d => Math.sqrt(d.intensity) * 1.8)
+                        .attr('fill-opacity', 0.7)
+                        .on('end', function repeat() {
+                            d3.select(this)
+                                .transition()
+                                .duration(1500)
+                                .attr('r', d => Math.sqrt(d.intensity) * 2.2)
+                                .attr('fill-opacity', 0.9)
+                                .transition()
+                                .duration(1500)
+                                .attr('r', d => Math.sqrt(d.intensity) * 1.8)
+                                .attr('fill-opacity', 0.7)
+                                .on('end', repeat);
+                        });
+                    
+                    // 隐藏缩略图
+                    tooltip
+                        .style('opacity', '0')
+                        .style('transform', 'translateY(10px) scale(0.95)')
+                        .style('visibility', 'hidden');
+                })
+                .style('cursor', 'pointer'); // 添加指针样式，提示可交互
+            
+            // 添加缩放功能
+            const zoom = d3.zoom()
+                .scaleExtent([1, 8])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                });
+                
+            svg.call(zoom);
+        })
+        .catch(error => console.error('加载世界地图数据时出错:', error));
+}
+
+// 添加平滑滚动功能
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+
+// 添加搜索功能
+function initSearchFeature() {
+    // 创建搜索按钮
+    const searchButton = document.createElement('button');
+    searchButton.id = 'search-button';
+    searchButton.innerHTML = '<i class="fas fa-search"></i>';
+    
+    // 将搜索按钮添加到导航栏右侧
+    const navRight = document.querySelector('.nav-right');
+    navRight.insertBefore(searchButton, navRight.firstChild);
+    
+    // 创建搜索容器
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'search-container';
+    searchContainer.innerHTML = `
+        <div class="search-close"><i class="fas fa-times"></i></div>
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="搜索...">
+            <div class="search-results"></div>
+        </div>
+    `;
+    document.body.appendChild(searchContainer);
+    
+    // 搜索按钮点击事件
+    searchButton.addEventListener('click', () => {
+        searchContainer.classList.add('active');
+        document.querySelector('.search-input').focus();
+    });
+    
+    // 关闭搜索框事件
+    document.querySelector('.search-close').addEventListener('click', () => {
+        searchContainer.classList.remove('active');
+    });
+    
+    // ESC键关闭搜索框
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && searchContainer.classList.contains('active')) {
+            searchContainer.classList.remove('active');
+        }
+    });
+    
+    // 搜索功能实现
+    const searchInput = document.querySelector('.search-input');
+    const searchResults = document.querySelector('.search-results');
+    
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+        
+        // 清空搜索结果
+        searchResults.innerHTML = '';
+        
+        if (query.length < 2) return;
+        
+        // 收集页面上的所有可搜索文本
+        const searchableElements = document.querySelectorAll('h1, h2, h3, p, li');
+        const results = [];
+        
+        searchableElements.forEach(el => {
+            const text = el.textContent;
+            if (text.toLowerCase().includes(query)) {
+                const sectionId = el.closest('section')?.id || '';
+                if (!results.some(r => r.text === text)) {
+                    results.push({
+                        text: text,
+                        element: el,
+                        sectionId: sectionId
+                    });
+                }
+            }
+        });
+        
+        // 显示搜索结果
+        if (results.length > 0) {
+            results.slice(0, 10).forEach(result => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                resultItem.textContent = result.text;
+                
+                resultItem.addEventListener('click', () => {
+                    searchContainer.classList.remove('active');
+                    
+                    if (result.sectionId) {
+                        document.getElementById(result.sectionId).scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        result.element.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                    
+                    // 高亮显示找到的内容
+                    result.element.classList.add('search-highlight');
+                    setTimeout(() => {
+                        result.element.classList.remove('search-highlight');
+                    }, 2000);
+                });
+                
+                searchResults.appendChild(resultItem);
+            });
+        } else {
+            const noResult = document.createElement('div');
+            noResult.className = 'search-result-item';
+            noResult.textContent = '没有找到相关内容';
+            searchResults.appendChild(noResult);
+        }
+    });
+}
+
+// 移动端水平滚动选择器
+function initMobileScrollSelector() {
+    const navLinks = document.querySelector('.nav-links');
+    
+    // 创建水平滚动选择器
+    const scrollSelector = document.createElement('div');
+    scrollSelector.className = 'scroll-selector';
+    scrollSelector.appendChild(navLinks.cloneNode(true));
+    
+    // 添加到页面
+    const header = document.querySelector('header');
+    header.appendChild(scrollSelector);
+    
+    // 添加滚动事件监听
+    const selectorLinks = scrollSelector.querySelectorAll('.nav-link');
+    selectorLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            document.querySelector(targetId).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+}
+
+// 导航高亮功能
+function initNavHighlight() {
+    // 获取所有部分和导航链接
+    const sections = document.querySelectorAll('.section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    // 设置观察者选项
+    const options = {
+        root: null,
+        rootMargin: '-20% 0px -70% 0px',
+        threshold: 0
+    };
+    
+    // 创建观察者
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // 获取当前部分的ID
+                const id = entry.target.getAttribute('id');
+                
+                // 移除所有导航链接的active类
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // 为当前部分的导航链接添加active类
+                const navLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                if (navLink) {
+                    navLink.classList.add('active');
+                }
+                
+                // 如果是移动端，滚动水平选择器到对应位置
+                const scrollSelector = document.querySelector('.scroll-selector');
+                if (scrollSelector && window.innerWidth <= 1024) {
+                    const activeLink = scrollSelector.querySelector(`.nav-link[href="#${id}"]`);
+                    if (activeLink) {
+                        activeLink.classList.add('active');
+                        scrollSelector.scrollTo({
+                            left: activeLink.offsetLeft - scrollSelector.offsetWidth / 2 + activeLink.offsetWidth / 2,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            }
+        });
+    }, options);
+    
+    // 观察每个部分
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+}
+
+// 项目轮播功能
+function initProjectsCarousel() {
+    const carousel = document.querySelector('.projects-carousel');
+    const viewport = carousel?.querySelector('.projects-viewport');
+    const wrapper = carousel?.querySelector('.projects-wrapper');
+    if (!viewport || !wrapper) return;
+    carousel._carouselAbortController?.abort();
+    const controller = new AbortController();
+    const { signal } = controller;
+    carousel._carouselAbortController = controller;
+    const prev = carousel.querySelector('.carousel-prev');
+    const next = carousel.querySelector('.carousel-next');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncEndSpace = () => {
+        const firstCard = wrapper.firstElementChild;
+        if (!firstCard) return;
+        const viewportStyles = window.getComputedStyle(viewport);
+        const startPadding = parseFloat(viewportStyles.paddingLeft) || 0;
+        const cardWidth = firstCard.getBoundingClientRect().width;
+        const gap = parseFloat(window.getComputedStyle(wrapper).columnGap) || 0;
+        // Leave one additional card step at the end, without scrolling past
+        // the last card's leading-edge snap point on narrow screens.
+        const endSpace = Math.max(startPadding, Math.min(
+            startPadding + cardWidth + gap,
+            viewport.clientWidth - startPadding - cardWidth
+        ));
+        viewport.style.setProperty('--project-end-space', `${endSpace}px`);
+    };
+    const maxScroll = () => Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    const clamp = x => Math.max(0, Math.min(maxScroll(), x));
+    const stops = () => {
+        const cards = [...wrapper.children];
+        const first = cards[0]?.offsetLeft || 0;
+        return [...new Set([0, ...cards.map(card => clamp(card.offsetLeft - first)), maxScroll()])];
+    };
+    const update = () => {
+        const x = viewport.scrollLeft;
+        if (prev) prev.hidden = prev.disabled = x <= 2;
+        if (next) next.hidden = next.disabled = x >= maxScroll() - 2;
+    };
+    const move = x => viewport.scrollTo({ left: clamp(x), behavior: reduced.matches ? 'instant' : 'smooth' });
+    const step = direction => {
+        const x = viewport.scrollLeft;
+        const points = stops();
+        move(direction > 0 ? (points.find(p => p > x + 2) ?? maxScroll()) :
+            ([...points].reverse().find(p => p < x - 2) ?? 0));
+    };
+    prev?.addEventListener('click', () => step(-1), { signal });
+    next?.addEventListener('click', () => step(1), { signal });
+    viewport.addEventListener('keydown', e => {
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+        e.preventDefault();
+        if (e.key === 'Home') move(0);
+        else if (e.key === 'End') move(maxScroll());
+        else step(e.key === 'ArrowRight' ? 1 : -1);
+    }, { signal });
+
+    // Native touch/trackpad scrolling owns direction locking and momentum.
+    // Only discrete mouse-wheel input is translated from vertical to horizontal.
+    // Browsers expose no reliable device type; pixel-mode precision input stays native.
+    let wheelTimer;
+    let lastWheelTime = 0;
+    let discreteGesture = false;
+    let wheelActive = false;
+    const finishWheel = () => {
+        wheelActive = false;
+        const x = viewport.scrollLeft;
+        const target = stops().reduce((best, p) => Math.abs(p - x) < Math.abs(best - x) ? p : best, 0);
+        viewport.classList.remove('is-wheeling');
+        move(target);
+    };
+    viewport.addEventListener('wheel', e => {
+        if (e.ctrlKey || e.metaKey) return;
+        const now = performance.now();
+        const amount = Math.abs(e.deltaY);
+        if (now - lastWheelTime > 220) {
+            discreteGesture = e.deltaMode !== 0 || (amount >= 100 && (amount % 100 === 0 || amount % 120 === 0));
+        }
+        lastWheelTime = now;
+        if (Math.abs(e.deltaX) > 0 || e.shiftKey) discreteGesture = false;
+        if (!discreteGesture || !e.deltaY) return;
+        const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? viewport.clientWidth : 1);
+        const x = viewport.scrollLeft;
+        if ((delta < 0 && x <= 2) || (delta > 0 && x >= maxScroll() - 2)) return;
+        e.preventDefault();
+        wheelActive = true;
+        viewport.classList.add('is-wheeling');
+        viewport.scrollLeft = clamp(x + delta);
+        clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(finishWheel, 180);
+    }, { passive: false, signal });
+    viewport.addEventListener('scroll', update, { passive: true, signal });
+    const refresh = () => {
+        syncEndSpace();
+        update();
+    };
+    const observer = new ResizeObserver(refresh);
+    observer.observe(viewport);
+    observer.observe(wrapper);
+    const contentObserver = new MutationObserver(refresh);
+    contentObserver.observe(wrapper, { childList: true });
+    signal.addEventListener('abort', () => {
+        observer.disconnect();
+        contentObserver.disconnect();
+        clearTimeout(wheelTimer);
+        if (wheelActive) viewport.classList.remove('is-wheeling');
+    }, { once: true });
+    refresh();
+}
+
+// AI聊天相关功能
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取元素
+    const floatingButton = document.getElementById('floating-chat-button');
+    const chatContainer = document.getElementById('ai-chat-container');
+    const closeButton = document.getElementById('ai-chat-close');
+    const sendButton = document.getElementById('ai-chat-send');
+    const chatInput = document.getElementById('ai-chat-input');
+    const messagesContainer = document.getElementById('ai-chat-messages');
+    const chatOverlay = document.getElementById('chat-overlay');
+    
+    // 检测是否为移动设备
+    let isMobile = window.innerWidth <= 768;
+    
+    // 打开聊天窗口
+    floatingButton.addEventListener('click', function() {
+        // 添加隐藏类并稍微延迟以创建弹性效果
+        floatingButton.classList.add('hidden');
+        
+        setTimeout(() => {
+            if (isMobile) {
+                chatOverlay.classList.add('active');
+            }
+            
+            chatContainer.style.display = 'flex';
+            
+            // 添加动画类以触发过渡效果
+            setTimeout(() => {
+                chatContainer.classList.add('active');
+            }, 10);
+        }, 200); // 等待按钮缩小效果完成
+    });
+    
+    // 关闭聊天窗口
+    function closeChat() {
+        chatContainer.classList.remove('active');
+        
+        if (isMobile) {
+            chatOverlay.classList.remove('active');
+        }
+        
+        // 等待动画完成后隐藏对话框
+        setTimeout(() => {
+            chatContainer.style.display = 'none';
+            
+            // 显示悬浮球并添加弹性动画
+            floatingButton.style.display = 'flex';
+            floatingButton.classList.remove('hidden');
+            floatingButton.classList.add('show');
+            
+            // 移除show类以确保下次点击时动画正常
+            setTimeout(() => {
+                floatingButton.classList.remove('show');
+                
+                // 确保律动动画恢复
+                void floatingButton.offsetWidth; // 强制重绘
+            }, 500);
+        }, 400);
+    }
+    
+    // 关闭按钮点击事件
+    closeButton.addEventListener('click', closeChat);
+    
+    // 移动端点击遮罩层关闭对话框
+    chatOverlay.addEventListener('click', function(e) {
+        if (isMobile) {
+            closeChat();
+        }
+    });
+    
+    // Successful turns remain available throughout this page session.
+    const chatHistory = [];
+    let chatRequestPending = false;
+
+    // 发送消息事件处理
+    function sendMessage() {
+        const message = chatInput.value.trim();
+        if (message && !chatRequestPending) {
+            // 添加用户消息到聊天界面
+            addUserMessage(message);
+            chatInput.value = '';
+            
+            // 显示思考中的状态
+            showTypingIndicator();
+            
+            // 调用DeepSeek API获取回复
+            fetchAIResponse(message);
+        }
+    }
+    
+    // 发送按钮点击事件
+    sendButton.addEventListener('click', sendMessage);
+    
+    // 输入框回车事件
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    // 添加用户消息到聊天界面
+    function addUserMessage(message) {
+        const userMessageElement = document.createElement('div');
+        userMessageElement.className = 'user-message';
+        userMessageElement.innerHTML = `
+            <div class="user-message-content">
+                <p>${escapeHtml(message)}</p>
+            </div>
+        `;
+        messagesContainer.appendChild(userMessageElement);
+        scrollToBottom();
+    }
+    
+    // 添加AI消息到聊天界面
+    function addAIMessage(message) {
+        // 移除正在输入指示器
+        removeTypingIndicator();
+        
+        const aiMessageElement = document.createElement('div');
+        aiMessageElement.className = 'ai-message';
+        aiMessageElement.innerHTML = `
+            <div class="ai-avatar">
+                <img src="assets/images/avatar-round.png" alt="AI Avatar">
+            </div>
+            <div class="ai-message-content"></div>
+        `;
+
+        const contentElement = aiMessageElement.querySelector('.ai-message-content');
+        contentElement.appendChild(formatAIMessage(message));
+
+        messagesContainer.appendChild(aiMessageElement);
+        scrollToBottom();
+    }
+    
+    // 显示AI正在输入的指示器
+    function showTypingIndicator() {
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'ai-message typing-indicator';
+        typingIndicator.innerHTML = `
+            <div class="ai-avatar">
+                <img src="assets/images/avatar-round.png" alt="AI Avatar">
+            </div>
+            <div class="ai-message-content">
+                <div class="typing-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        `;
+        messagesContainer.appendChild(typingIndicator);
+        scrollToBottom();
+    }
+    
+    // 移除正在输入指示器
+    function removeTypingIndicator() {
+        const typingIndicator = document.querySelector('.typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+    
+    // 滚动到底部
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // HTML转义函数，防止XSS攻击
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+	    function formatAIMessage(message) {
+        const container = document.createElement('div');
+        container.className = 'ai-message-text';
+
+        const cleanedMessage = (message || '')
+            .replace(/\r\n/g, '\n')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/^---+$/gm, '')
+            .trim();
+
+        if (!cleanedMessage) {
+            const paragraph = document.createElement('p');
+            paragraph.textContent = '';
+            container.appendChild(paragraph);
+            return container;
+        }
+
+        const blocks = cleanedMessage.split(/\n\s*\n/).filter(Boolean);
+
+	        function appendWithLinks(parent, text) {
+	            const src = String(text || '');
+	            const urlRe = /https?:\/\/[^\s<>()]+/g;
+	            let last = 0;
+	            let m;
+	            while ((m = urlRe.exec(src))) {
+	                const start = m.index;
+	                const end = start + m[0].length;
+	                if (start > last) parent.appendChild(document.createTextNode(src.slice(last, start)));
+	                const a = document.createElement('a');
+	                a.href = m[0];
+	                a.target = '_blank';
+	                a.rel = 'noopener noreferrer';
+	                a.textContent = m[0];
+	                parent.appendChild(a);
+	                last = end;
+	            }
+	            if (last < src.length) parent.appendChild(document.createTextNode(src.slice(last)));
+	        }
+
+	        blocks.forEach((block) => {
+	            const lines = block
+	                .split('\n')
+	                .map((line) => line.trim())
+	                .filter(Boolean);
+
+            if (lines.length === 0) {
+                return;
+            }
+
+            const isBulletList = lines.every((line) => /^[-*•]\s+/.test(line));
+            const isOrderedList = lines.every((line) => /^\d+[.)]\s+/.test(line));
+
+	            if (isBulletList || isOrderedList) {
+	                const list = document.createElement(isOrderedList ? 'ol' : 'ul');
+	                list.className = 'ai-message-list';
+
+	                lines.forEach((line) => {
+	                    const item = document.createElement('li');
+	                    appendWithLinks(item, line.replace(/^([-*•]|\d+[.)])\s+/, ''));
+	                    list.appendChild(item);
+	                });
+
+	                container.appendChild(list);
+	                return;
+	            }
+
+	            const paragraph = document.createElement('p');
+	            appendWithLinks(paragraph, lines.join('\n'));
+	            container.appendChild(paragraph);
+	        });
+
+        return container;
+    }
+    
+    function getChatApiUrl() {
+        if (window.CRISTY_AI_CHAT_ENDPOINT) return window.CRISTY_AI_CHAT_ENDPOINT;
+        const configuredBase = window.CRISTY_AI_API_URL || '';
+        const normalizedBase = configuredBase.replace(/\/+$/, '');
+        return normalizedBase ? `${normalizedBase}/api/chat` : '/api/chat';
+    }
+
+    // 通过Cloudflare Worker代理调用AI接口，避免在前端暴露密钥
+    async function fetchAIResponse(message) {
+        const navigation = window.cristyChatNavigation?.begin(message);
+        chatRequestPending = true;
+        sendButton.disabled = true;
+        try {
+            const response = await fetch(getChatApiUrl(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message, history: chatHistory.slice(-16), navigationTargets: navigation?.targets || [] }),
+                signal: AbortSignal.timeout(45000)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const errorMessage = data && data.error ? data.error : 'Unknown API error';
+                throw new Error(errorMessage);
+            }
+
+            if (data.reply) {
+                const aiResponse = data.reply;
+                chatHistory.push({ role: 'user', content: message.slice(0, 2000) }, { role: 'assistant', content: aiResponse.slice(0, 4000) });
+                if (chatHistory.length > 16) chatHistory.splice(0, chatHistory.length - 16);
+                addAIMessage(aiResponse);
+                window.cristyChatNavigation?.apply(data.targetId, navigation);
+            } else {
+                addAIMessage("I'm sorry, I couldn't generate a response at this time. Please try again later.");
+            }
+        } catch (error) {
+            console.error('Error fetching AI response:', error);
+            removeTypingIndicator();
+
+            addAIMessage(/[\u3400-\u9fff]/.test(message) ? '这次请求没有完成，请稍后重试。之前的对话仍然保留。' : 'This request did not complete. Please try again; your earlier conversation is still available.');
+        } finally {
+            chatRequestPending = false;
+            sendButton.disabled = false;
+        }
+    }
+
+    // 不再需要在JS中控制工具提示，因为现在已经通过CSS动画来控制
+    
+    // 窗口大小变化时更新移动设备检测
+    window.addEventListener('resize', function() {
+        isMobile = window.innerWidth <= 768;
+    });
+});
+
+// 添加正在输入指示器的样式
+const style = document.createElement('style');
+style.textContent = `
+.typing-dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #C686FF;
+    display: inline-block;
+    animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing {
+    0%, 80%, 100% { 
+        transform: scale(0);
+    } 
+    40% { 
+        transform: scale(1);
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .typing-dots span {
+        background-color: #F5B9EA;
+    }
+}
+`
+document.head.appendChild(style);
+
+function initExperienceExpandCollapse(options = {}) {
+    // Event delegation: stable even when experience DOM is re-rendered by sync scripts.
+    const { reset = false } = options;
+    const root = document.getElementById('experience');
+    if (!root) return false;
+
+    if (!window.__experienceDelegatedHandlersInitialized) {
+        root.addEventListener('click', function (e) {
+            const toggleButton = e.target.closest('.experience-toggle');
+            if (toggleButton) {
+                e.stopPropagation();
+                const detailsId = toggleButton.getAttribute('aria-controls');
+                if (detailsId) toggleExperienceDetails(detailsId);
+                return;
+            }
+
+            const header = e.target.closest('.experience-header[data-controls]');
+            if (header) {
+                if (!e.target.closest('.experience-toggle')) {
+                    const detailsId = header.getAttribute('data-controls');
+                    if (detailsId) toggleExperienceDetails(detailsId);
+                }
+                return;
+            }
+
+            const logo = e.target.closest('.experience-logo[data-controls]');
+            if (logo) {
+                const detailsId = logo.getAttribute('data-controls');
+                if (detailsId) toggleExperienceDetails(detailsId);
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            document.querySelectorAll('.experience-details-wrapper').forEach(wrapper => {
+                const detailsId = wrapper.id.replace('wrapper', 'details');
+                const detailsElement = document.getElementById(detailsId);
+                const button = document.querySelector(`[aria-controls="${detailsId}"]`);
+
+                if (button && button.getAttribute('aria-expanded') === 'true' && detailsElement) {
+                    wrapper.style.maxHeight = detailsElement.scrollHeight + 40 + 'px';
+                }
+            });
+        });
+
+        window.__experienceDelegatedHandlersInitialized = true;
+    }
+
+    if (reset) {
+        document.querySelectorAll('.experience-toggle').forEach(button => {
+            const detailsId = button.getAttribute('aria-controls');
+            const detailsElement = detailsId ? document.getElementById(detailsId) : null;
+            const wrapperElement = detailsId ? document.getElementById(detailsId.replace('details', 'wrapper')) : null;
+
+            button.setAttribute('aria-expanded', 'false');
+            if (detailsElement) detailsElement.classList.remove('expanded');
+            if (wrapperElement) wrapperElement.style.maxHeight = '0';
+        });
+    }
+
+    function toggleExperienceDetails(detailsId) {
+        const detailsElement = document.getElementById(detailsId);
+        const wrapperElement = document.getElementById(detailsId.replace('details', 'wrapper'));
+        const button = document.querySelector(`[aria-controls="${detailsId}"]`);
+        if (!detailsElement || !wrapperElement || !button) return;
+
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+
+        if (isExpanded) {
+            button.setAttribute('aria-expanded', 'false');
+            wrapperElement.style.maxHeight = '0';
+            wrapperElement.addEventListener('transitionend', function removeExpandedClass() {
+                detailsElement.classList.remove('expanded');
+                wrapperElement.removeEventListener('transitionend', removeExpandedClass);
+            }, { once: true });
+        } else {
+            button.setAttribute('aria-expanded', 'true');
+            detailsElement.classList.add('expanded');
+            wrapperElement.style.maxHeight = detailsElement.scrollHeight + 40 + 'px';
+        }
+    }
+
+    return true;
+}
+
+window.initExperienceExpandCollapse = initExperienceExpandCollapse;
+
+document.addEventListener('DOMContentLoaded', function () {
+    initExperienceExpandCollapse({ reset: true });
+});
